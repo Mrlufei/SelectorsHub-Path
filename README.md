@@ -1,6 +1,6 @@
 # Xpath Repair 🔧
 
-一款面向自动化测试工程师的**元素定位采集、验证与自愈修复**桌面工具。
+一款面向自动化测试工程师的**元素定位采集、验证与自修复**桌面工具。
 
 基于 Electron + Chrome 扩展桥接架构，支持在网页上实时捕获元素，自动生成多种定位器（XPath / CSS / ID / Name / ClassName），并提供定位失效时的本地智能修复能力。
 
@@ -141,3 +141,4 @@ xpath-repair-desktop/
 ## 📄 License
 
 MIT
+
