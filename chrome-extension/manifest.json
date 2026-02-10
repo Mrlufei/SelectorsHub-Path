@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Xpath Repair Bridge",
+  "version": "2.0",
+  "description": "Xpath Repair 桌面端的浏览器桥接扩展，负责元素拾取与验证",
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "permissions": [
+    "tabs",
+    "scripting",
+    "storage",
+    "alarms",
+    "offscreen"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "service_worker.js"
+  },
+  "action": {
+    "default_title": "Xpath Repair Bridge",
+    "default_icon": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["utils.js", "content_script.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["utils.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
