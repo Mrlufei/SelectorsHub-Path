@@ -1,0 +1,17 @@
+{
+  "name": "xpath-repair-desktop",
+  "version": "1.0.0",
+  "description": "Xpath Repair 桌面端 - 元素定位采集与验证工具",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "dependencies": {
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^26.7.0"
+  }
+}
