@@ -1,0 +1,158 @@
+// i18n.js - 国际化（桌面端版本）
+const I18N = {
+  'zh': {
+    'title': 'Xpath Repair',
+    'btn_pick': '🖱️ 捕获元素',
+    'btn_picking': '正在捕获... (按ESC退出)',
+    'section_info': '当前元素信息',
+    'label_tag': '标签:', 'label_id': 'ID:', 'label_class': 'Class:', 'label_name': 'Name:', 'label_text': '文本:',
+    'placeholder_name': '输入元素名称 (例如: 登录按钮)',
+    'btn_save': '💾 保存选中定位器',
+    'section_candidates': '生成的定位器 (点击选择)',
+    'hint_pick': '点击顶部的"捕获元素"按钮<br>然后在网页上选择目标',
+    'section_saved': '已保存元素',
+    'placeholder_search': '搜索...',
+    'btn_delete_selected': '🗑️ 删除',
+    'settings_title': '⚙️ 设置',
+    'label_language': '语言 / Language',
+    'label_theme': '主题配色',
+    'label_pick_color': '捕获高亮颜色',
+    'label_verify_color': '验证高亮颜色',
+    'label_yingdao_dir': '影刀流程目录',
+    'label_install_extension': '安装浏览器插件',
+    'btn_install_extension': '📂 打开插件目录',
+    'install_extension_tip': '请在 Chrome 中打开 chrome://extensions，开启"开发者模式"，然后点击"加载已解压的扩展程序"，选择刚才打开的文件夹。',
+    'confirm_delete_group': '确定要删除该组下所有 {n} 个元素吗?',
+    'confirm_delete_selected': '确定要删除选中的 {n} 个元素吗?',
+    'prompt_rename': '为该网页设置别名 (留空则恢复默认):',
+    'alert_saved': '已保存!',
+    'status_validating': '正在验证...',
+    'status_error': '错误: 无响应',
+    'status_unique': '✅ 唯一匹配',
+    'status_not_found': '❌ 未找到',
+    'status_multiple': '⚠️ 找到 {n} 个匹配',
+    'btn_validate': '验证', 'btn_validate_all': '⏩ 验证全部',
+    'btn_repair': '本地修复', 'btn_repair_all': '🛠️ 批量本地修复',
+    'btn_copy': '复制', 'btn_copied': '已复制',
+    'tag_success': '成功', 'tag_failure': '验证失败', 'tag_validating': '验证中...', 'tag_warning': '多重匹配', 'tag_error': '错误',
+    'btn_save_with_type': '💾 保存 ({type})',
+    'alert_connection_failed': '扩展未连接，请确保 Chrome 扩展已安装并启用',
+    'alert_system_page': '无法在浏览器系统页面使用此功能，请切换到普通网页。',
+    'confirm_page_mismatch': '页面不一致，是否跳转到 {url} 进行验证?',
+    'confirm_page_mismatch_batch': '批量验证需要当前页面与保存页面一致。是否跳转到 {url}?',
+    'title_rename_group': '重命名分组', 'title_delete_group': '删除整组', 'title_expand_collapse': '点击展开/折叠',
+    'msg_no_saved': '暂无保存的元素',
+    'header_repair': '🔧 本地修复建议',
+    'msg_analyzing': '正在分析页面结构并生成修复方案...',
+    'msg_repair_empty': '无法生成有效的修复候选。请手动重新捕获。',
+    'msg_no_fingerprint': '无指纹数据。请重新验证以补录。',
+    'status_perfect': '完美匹配', 'status_risk': '风险: {reason}', 'status_match_count': '匹配 {n} 个元素',
+    'btn_adopt': '采纳', 'btn_force': '强制',
+    'alert_repaired': '修复成功！已更新为主定位器。',
+    'confirm_force_adopt': '该候选存在风险 ({reason})，确定要强制采纳吗？',
+    'btn_export': '📤 导出数据', 'btn_import': '📥 导入数据',
+    'btn_export_yingdao': '勾选导出至影刀', 'btn_import_yingdao': '从影刀导入',
+    'msg_no_data_to_export': '暂无数据可导出',
+    'confirm_import': '准备导入 {n} 条数据。现有相同ID的数据将被更新，新的将被添加。确定继续吗？',
+    'alert_imported': '导入完成！新增 {added} 条，更新 {updated} 条。',
+    'alert_import_failed': '导入失败：文件格式错误或损坏。',
+    'extension_connected': '✅ 扩展已连接',
+    'extension_disconnected': '❌ 扩展未连接',
+    'yingdao_dir_not_set': '请先在设置中选择影刀流程目录',
+    'yingdao_import_success': '从影刀导入成功！共导入 {n} 个 Web 元素。',
+    'yingdao_import_empty': '未找到可导入的 Web 元素。',
+    'yingdao_export_success': '导出至影刀成功！共写入 {n} 个分组。',
+    'yingdao_export_empty': '暂无数据可导出至影刀。',
+    'yingdao_export_no_selection': '请先勾选要导出的元素。',
+    'yingdao_skipped_desktop': '已跳过 {n} 个桌面端选择器（仅支持 Web 元素）。'
+  },
+  'en': {
+    'title': 'Xpath Repair',
+    'btn_pick': '🖱️ Capture Element',
+    'btn_picking': 'Capturing... (ESC to exit)',
+    'section_info': 'Current Element Info',
+    'label_tag': 'Tag:', 'label_id': 'ID:', 'label_class': 'Class:', 'label_name': 'Name:', 'label_text': 'Text:',
+    'placeholder_name': 'Element Name (e.g. Login Button)',
+    'btn_save': '💾 Save Locator',
+    'section_candidates': 'Generated Locators (Click to Select)',
+    'hint_pick': 'Click "Capture Element" above<br>then select target on page',
+    'section_saved': 'Saved Elements',
+    'placeholder_search': 'Search...',
+    'btn_delete_selected': '🗑️ Delete',
+    'settings_title': '⚙️ Settings',
+    'label_language': 'Language',
+    'label_theme': 'Theme Color',
+    'label_pick_color': 'Capture Highlight Color',
+    'label_verify_color': 'Verify Highlight Color',
+    'label_yingdao_dir': 'YingDao Process Dir',
+    'label_install_extension': 'Install Browser Extension',
+    'btn_install_extension': '📂 Open Extension Folder',
+    'install_extension_tip': 'Open chrome://extensions in Chrome, enable "Developer mode", click "Load unpacked", then select the folder that just opened.',
+    'confirm_delete_group': 'Delete all {n} elements in this group?',
+    'confirm_delete_selected': 'Delete selected {n} elements?',
+    'prompt_rename': 'Set alias for this page (Leave empty to reset):',
+    'alert_saved': 'Saved!',
+    'status_validating': 'Validating...', 'status_error': 'Error: No Response',
+    'status_unique': '✅ Unique', 'status_not_found': '❌ Not Found', 'status_multiple': '⚠️ Found {n} matches',
+    'btn_validate': 'Verify', 'btn_validate_all': '⏩ Verify All',
+    'btn_repair': 'Local Repair', 'btn_repair_all': '🛠️ Batch Local Repair',
+    'btn_copy': 'Copy', 'btn_copied': 'Copied',
+    'tag_success': 'Success', 'tag_failure': 'Verify Failed', 'tag_validating': 'Checking...', 'tag_warning': 'Multiple', 'tag_error': 'Error',
+    'btn_save_with_type': '💾 Save ({type})',
+    'alert_connection_failed': 'Extension not connected. Ensure Chrome extension is installed.',
+    'alert_system_page': 'Cannot use on system pages. Switch to a normal webpage.',
+    'confirm_page_mismatch': 'Page mismatch. Jump to {url} to verify?',
+    'confirm_page_mismatch_batch': 'Batch validation requires matching page. Jump to {url}?',
+    'title_rename_group': 'Rename Group', 'title_delete_group': 'Delete Group', 'title_expand_collapse': 'Click to Expand/Collapse',
+    'msg_no_saved': 'No saved elements',
+    'header_repair': '🔧 Local Repair Suggestions',
+    'msg_analyzing': 'Analyzing page structure...', 'msg_repair_empty': 'No valid candidates. Re-capture manually.',
+    'msg_no_fingerprint': 'No fingerprint data. Verify again to record.',
+    'status_perfect': 'Perfect Match', 'status_risk': 'Risk: {reason}', 'status_match_count': 'Matches {n} elements',
+    'btn_adopt': 'Adopt', 'btn_force': 'Force',
+    'alert_repaired': 'Repaired! Updated as primary locator.',
+    'confirm_force_adopt': 'This candidate has risks ({reason}). Force adopt?',
+    'btn_export': '📤 Export Data', 'btn_import': '📥 Import Data',
+    'btn_export_yingdao': 'Export Selected to YingDao', 'btn_import_yingdao': 'Import from YingDao',
+    'msg_no_data_to_export': 'No data to export',
+    'confirm_import': 'Ready to import {n} items. Continue?',
+    'alert_imported': 'Import completed! Added {added}, Updated {updated}.',
+    'alert_import_failed': 'Import failed: Invalid file format.',
+    'extension_connected': '✅ Extension Connected',
+    'extension_disconnected': '❌ Extension Disconnected',
+    'yingdao_dir_not_set': 'Please set YingDao process directory in Settings first',
+    'yingdao_import_success': 'Imported {n} web elements from YingDao.',
+    'yingdao_import_empty': 'No importable web elements found.',
+    'yingdao_export_success': 'Exported {n} groups to YingDao.',
+    'yingdao_export_empty': 'No data to export to YingDao.',
+    'yingdao_export_no_selection': 'Please select elements to export first.',
+    'yingdao_skipped_desktop': 'Skipped {n} desktop selectors (Web only).'
+  }
+};
+
+let currentLang = 'zh';
+
+function t(key, params = {}) {
+  let text = I18N[currentLang][key] || key;
+  Object.keys(params).forEach(k => {
+    text = text.replace(`{${k}}`, params[k]);
+  });
+  return text;
+}
+
+function updatePageLanguage() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (el.tagName === 'INPUT' && el.getAttribute('placeholder')) {
+      el.setAttribute('placeholder', t(key));
+    } else {
+      el.textContent = t(key);
+    }
+  });
+  // 带图标的影刀按钮（不用 data-i18n，手动更新 innerHTML）
+  const iconHtml = '<img src="yingdao-icon.png" class="btn-icon">';
+  const btnExYd = document.getElementById('btn-export-yingdao');
+  const btnImYd = document.getElementById('btn-import-yingdao');
+  if (btnExYd) btnExYd.innerHTML = iconHtml + ' ' + t('btn_export_yingdao');
+  if (btnImYd) btnImYd.innerHTML = iconHtml + ' ' + t('btn_import_yingdao');
+}

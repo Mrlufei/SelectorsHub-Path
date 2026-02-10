@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+    <link rel="stylesheet" href="styles.css">
+    <script src="utils.js"></script>
+    <script src="i18n.js"></script>
+    <script src="yingdao.js"></script>
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <!-- 加载蒙版：首次连接前显示 -->
+    <div id="loading-overlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg-color, #f0f2f5); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:99999;">
+        <div style="font-size:24px; margin-bottom:16px;">🔌</div>
+        <div style="font-size:14px; color:#666;">正在连接浏览器插件...</div>
+        <div style="font-size:11px; color:#999; margin-top:8px;">请确保 Chrome 桥接扩展已安装并启用</div>
+        <button id="btn-install-overlay" style="margin-top:20px; padding:8px 20px; border:1px solid #d9d9d9; border-radius:6px; background:#fff; color:#333; font-size:13px; cursor:pointer;">📂 安装浏览器插件</button>
+        <div id="install-tip-overlay" style="display:none; margin-top:10px; padding:10px 16px; background:#fffbe6; border:1px solid #ffe58f; border-radius:6px; font-size:11px; color:#666; max-width:300px; text-align:left; line-height:1.6;">
+            1. 在 Chrome 地址栏输入 <b>chrome://extensions</b><br>
+            2. 开启右上角「开发者模式」<br>
+            3. 点击「加载已解压的扩展程序」<br>
+            4. 选择刚才打开的文件夹<br>
+            5. 安装完成后此页面将自动连接
+        </div>
+    </div>
+
+    <!-- 连接状态栏 -->
+    <div id="connection-bar" class="connection-bar disconnected">
+        <span id="connection-dot" class="dot"></span>
+        <span id="connection-text">扩展未连接</span>
+    </div>
+
+    <header>
+        <h2>Xpath Repair <span style="font-size:11px; font-weight:normal; color:#999;">测试版v0.2</span></h2>
+        <button id="btn-pick" class="btn" data-i18n="btn_pick" disabled>🖱️ 捕获元素</button>
+    </header>
+
+    <main>
+        <!-- 区域 1: 当前选中元素信息 -->
+        <div class="pane">
+            <div class="section-title" id="info-header" style="cursor: pointer; display: flex; align-items: center;">
+                <span class="arrow-icon collapsed">▼</span> <span data-i18n="section_info">当前元素信息</span>
+            </div>
+            <div id="info-content-container" style="display: none;">
+                <div id="element-info" class="info-grid">
+                    <div class="label" data-i18n="label_tag">标签:</div><div class="value" id="info-tag">-</div>
+                    <div class="label" data-i18n="label_id">ID:</div><div class="value" id="info-id">-</div>
+                    <div class="label" data-i18n="label_class">Class:</div><div class="value" id="info-class">-</div>
+                    <div class="label" data-i18n="label_name">Name:</div><div class="value" id="info-name">-</div>
+                    <div class="label" data-i18n="label_text">文本:</div><div class="value" id="info-text">-</div>
+                </div>
+                <div style="margin-top: 12px;">
+                    <div class="info-grid" style="grid-template-columns: 1fr;">
+                        <input type="text" id="element-name-input" data-i18n="placeholder_name" placeholder="输入元素名称 (例如: 登录按钮)" style="width: 100%; padding: 6px; border: 1px solid #d9d9d9; border-radius: 4px; box-sizing: border-box;">
+                        <button id="btn-save" class="btn" style="width: 100%;" disabled data-i18n="btn_save">💾 保存选中定位器</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 区域 2: 候选定位器 -->
+        <div class="pane" style="flex-shrink: 0;">
+            <div class="section-title" id="candidates-header" style="cursor: pointer; display: flex; align-items: center;">
+                <span class="arrow-icon collapsed">▼</span> <span data-i18n="section_candidates">生成的定位器 (点击选择)</span>
+            </div>
+            <div id="candidates-list" class="locator-list" style="display: none;">
+                <div style="color: #999; text-align: center; padding: 20px;" data-i18n="hint_pick">
+                    点击顶部的"捕获元素"按钮<br>然后在网页上选择目标
+                </div>
+            </div>
+        </div>
+
+        <!-- 区域 3: 已保存列表 -->
+        <div class="pane" style="flex: 1;">
+            <div class="section-title" id="saved-header" style="display: flex; justify-content: space-between; align-items: center; height: 28px; cursor: pointer;">
+                <div style="display: flex; align-items: center;">
+                    <span class="arrow-icon collapsed">▼</span> <span data-i18n="section_saved">已保存元素</span>
+                </div>
+                <div style="display: flex; gap: 4px;" onclick="event.stopPropagation()">
+                    <input type="text" id="search-input" data-i18n="placeholder_search" placeholder="搜索..." style="padding: 2px 4px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; width: 100px;">
+                    <button id="btn-merge-groups" class="btn secondary" style="display: none; padding: 2px 6px; font-size: 12px;">📁 合并为新组</button>
+                    <button id="btn-delete-selected" class="btn danger" style="display: none; padding: 2px 6px; font-size: 12px;" data-i18n="btn_delete_selected">🗑️ 删除(0)</button>
+                </div>
+            </div>
+            <div id="saved-list" style="display: none;"></div>
+        </div>
+
+        <!-- 底部数据管理区域 -->
+        <div class="pane data-management-pane">
+            <div class="data-actions-grid">
+                <button id="btn-export" class="btn secondary" data-i18n="btn_export">📤 导出数据</button>
+                <button id="btn-import" class="btn secondary" data-i18n="btn_import">📥 导入数据</button>
+                <button id="btn-export-yingdao" class="btn secondary"><img src="yingdao-icon.png" class="btn-icon"> 勾选导出至影刀</button>
+                <button id="btn-import-yingdao" class="btn secondary"><img src="yingdao-icon.png" class="btn-icon"> 从影刀导入</button>
+            </div>
+            <input type="file" id="file-import" accept=".json" style="display: none;">
+        </div>
+    </main>
+
+    <!-- 底部设置面板 -->
+    <footer id="settings-footer">
+        <div id="settings-header" style="cursor: pointer; display: flex; justify-content: center; align-items: center; padding: 8px 0; background: var(--header-bg); border-top: 1px solid var(--border-color);">
+            <span class="arrow-icon" id="settings-arrow" style="transform: rotate(180deg);">▼</span> <span data-i18n="settings_title">⚙️ 设置</span>
+        </div>
+        <div id="settings-content" style="display: none; padding: 12px; background: var(--bg-color); border-top: 1px solid var(--border-color);">
+            <!-- 语言 -->
+            <div class="setting-item">
+                <div class="label" data-i18n="label_language">语言 / Language</div>
+                <div class="value">
+                    <button class="btn-lang active" data-lang="zh">中文</button>
+                    <button class="btn-lang" data-lang="en">English</button>
+                </div>
+            </div>
+            <!-- 主题 -->
+            <div class="setting-item">
+                <div class="label" data-i18n="label_theme">主题配色</div>
+                <div class="value theme-options">
+                    <div class="theme-option active" data-theme="default" style="background: linear-gradient(135deg, #f5f5f5 50%, #d9d9d9 50%); border: 1px solid #d9d9d9;" title="默认"></div>
+                    <div class="theme-option" data-theme="violet" style="background: #722ed1;" title="Violet"></div>
+                    <div class="theme-option" data-theme="ocean" style="background: #1890ff;" title="Ocean"></div>
+                    <div class="theme-option" data-theme="forest" style="background: #52c41a;" title="Forest"></div>
+                    <div class="theme-option" data-theme="orange" style="background: #fa8c16;" title="Orange"></div>
+                    <div class="theme-option" data-theme="pink" style="background: #eb2f96;" title="Pink"></div>
+                    <div class="theme-option" data-theme="dark" style="background: #333;" title="Dark"></div>
+                </div>
+            </div>
+            <!-- 高亮颜色 -->
+            <div class="setting-item">
+                <div class="label" data-i18n="label_pick_color">捕获高亮颜色</div>
+                <div class="value"><input type="color" id="color-pick" value="#ff0000"></div>
+            </div>
+            <div class="setting-item">
+                <div class="label" data-i18n="label_verify_color">验证高亮颜色</div>
+                <div class="value"><input type="color" id="color-verify" value="#52c41a"></div>
+            </div>
+            <!-- 影刀目录 -->
+            <div class="setting-item">
+                <div class="label" data-i18n="label_yingdao_dir">影刀流程目录</div>
+                <div class="value" style="display: flex; gap: 4px; align-items: center;">
+                    <span id="yingdao-dir-display" style="font-size: 11px; color: #999; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">未设置</span>
+                    <button id="btn-select-yingdao-dir" class="btn secondary" style="padding: 2px 6px; font-size: 11px;">选择</button>
+                </div>
+            </div>
+            <!-- 安装桥接扩展 -->
+            <div class="setting-item">
+                <div class="label" data-i18n="label_install_extension">安装浏览器插件</div>
+                <div class="value" style="display: flex; gap: 4px; align-items: center;">
+                    <button id="btn-install-extension" class="btn secondary" style="padding: 2px 6px; font-size: 11px;" data-i18n="btn_install_extension">📂 打开插件目录</button>
+                </div>
+            </div>
+            <!-- 作者信息 -->
+            <div style="text-align:center; padding:8px 0 4px; font-size:11px; color:#999; border-top:1px solid var(--border-color); margin-top:8px;">
+                作者：步月<br>
+                <span style="font-size:10px;">联系作者wx：lyh2czy</span>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
