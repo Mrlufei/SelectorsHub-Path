@@ -127,10 +127,9 @@ xpath-repair-desktop/
 
 ## 📝 开发计划
 
-- [ ] 打包为独立可执行文件（.exe）
-- [ ] 支持更多浏览器（Edge、Firefox）
 - [ ] 云端同步元素库
 - [ ] 批量修复策略优化
+- [ ] 引入AI捕获及修复元素
 
 ## 👤 作者
 
@@ -141,4 +140,5 @@ xpath-repair-desktop/
 ## 📄 License
 
 MIT
+
 
