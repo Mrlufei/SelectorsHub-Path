@@ -208,12 +208,14 @@ input[type="color"] { border: none; width: 30px; height: 30px; cursor: pointer; 
 .dom-tree-node.selected {
     background: rgba(24, 144, 255, 0.2);
     border-left: 3px solid var(--primary-color);
+    padding-left: 5px;
 }
 
 .dom-tree-node.target-element {
     background: rgba(82, 196, 26, 0.2);
     border-left: 3px solid #52c41a;
     font-weight: bold;
+    padding-left: 5px;
 }
 
 .dom-tree-checkbox {
@@ -227,12 +229,20 @@ input[type="color"] { border: none; width: 30px; height: 30px; cursor: pointer; 
 }
 
 .dom-tree-attr {
-    color: #fa8c16;
+    color: #722ed1;
     margin-left: 4px;
+    font-size: 11px;
+    font-weight: normal;
 }
 
-.dom-tree-attr-value {
-    color: #52c41a;
+.dom-tree-attr .attr-key {
+    color: #13c2c2;
+    font-weight: 500;
+}
+
+.dom-tree-attr .attr-value {
+    color: #fa8c16;
+    font-style: italic;
 }
 
 .dom-tree-text {
