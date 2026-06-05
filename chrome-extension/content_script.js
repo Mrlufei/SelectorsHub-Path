@@ -188,9 +188,17 @@ function onClick(e) {
         type: target.getAttribute('type'),
         url: window.location.href,
         candidates: candidates,
-        // 新增自愈数据采集
+        // 自愈数据采集：使用优化版祖先链（动态深度 + 智能剪枝）
         fingerprint: Utils.getFingerprint(target),
-        ancestorChain: Utils.getAncestorChain(target)
+        ancestorChain: Utils.getAncestorChainOptimized(target, {
+            enablePruning: true
+        }),
+        // 新增：相似元素（批量场景支持）
+        similarElements: Utils.findSimilarElements(target, 0.7, 50).map(item => ({
+            tagName: item.element.tagName,
+            similarity: item.similarity,
+            text: item.element.innerText ? item.element.innerText.substring(0, 50) : ''
+        }))
     };
 
     // 发送回 Panel
