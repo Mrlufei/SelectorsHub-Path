@@ -9,7 +9,7 @@ let mainWindow = null;
 let wss = null;
 let extensionSocket = null; // 当前连接的扩展 WebSocket
 
-const WS_PORT = 9527;
+let WS_PORT = 9527;
 
 // ========== Electron 窗口 ==========
 function createWindow() {
@@ -31,10 +31,19 @@ function createWindow() {
 }
 
 // ========== WebSocket 服务 ==========
-function startWebSocket() {
-  wss = new WebSocketServer({ port: WS_PORT });
-  console.log(`WebSocket 服务已启动，端口 ${WS_PORT}`);
+function startWebSocket(retryPort) {
+  var port = retryPort || WS_PORT;
+  try {
+    wss = new WebSocketServer({ port: port });
+  } catch (e) {
+    console.error("[WS] 端口 "+port+" 启动失败: "+e.message);
+    if (port === WS_PORT) { startWebSocket(WS_PORT + 1); }
+    return;
+  }
+  console.log("[WS] 服务已启动，端口 "+port);
+  WS_PORT = port;
 
+  wss.on('error', function(err) { console.error('[WS] 错误:', err.message); });
   wss.on('connection', (ws) => {
     console.log('Chrome 扩展已连接');
     extensionSocket = ws;

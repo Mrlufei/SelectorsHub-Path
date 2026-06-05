@@ -12,6 +12,8 @@ const ALARM_NAME = 'ws-keepalive';
 let lastConnectAttempt = 0;
 const CONNECT_COOLDOWN = 3000;
 let isConnecting = false;
+var retryDelay = 1000;
+var maxRetryDelay = 30000;
 
 async function connectWebSocket() {
   if (isConnecting) return;
@@ -61,6 +63,7 @@ async function connectWebSocket() {
 }
 
 function ensureConnection() {
+  retryDelay = 1000; // 主动触发时重置退避
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     connectWebSocket();
   }
@@ -149,6 +152,33 @@ async function validateViaDebugger(tabId, locator) {
   return result;
 }
 
+
+
+// ========== 安全发送消息（自动注入 + 重试） ==========
+/** 向 tab 发送消息，若接收端不存在则先注入再重试 */
+function sendMessageSafe(tabId, msg, callback) {
+  chrome.tabs.sendMessage(tabId, msg, function(response) {
+    if (chrome.runtime.lastError) {
+      var err = chrome.runtime.lastError.message || '';
+      if (err.indexOf('Receiving end does not exist') >= 0 || err.indexOf('Could not establish connection') >= 0) {
+        // 接收端不存在，尝试注入后重试
+        injectContentScripts(tabId).then(function() {
+          chrome.tabs.sendMessage(tabId, msg, function(retryResponse) {
+            if (callback) {
+              if (chrome.runtime.lastError) { callback(null); return; }
+              callback(retryResponse);
+            }
+          });
+        });
+        return;
+      }
+      if (callback) { callback(null); return; }
+      return;
+    }
+    if (callback) { callback(response); }
+  });
+}
+
 // ========== 处理来自桌面端的消息 ==========
 async function handleDesktopMessage(msg) {
   const tab = await getCurrentTab();
@@ -160,7 +190,7 @@ async function handleDesktopMessage(msg) {
   await injectContentScripts(tab.id);
 
   if (msg.action === 'start_picking') {
-    chrome.tabs.sendMessage(tab.id, { action: 'start_picking' });
+    sendMessageSafe(tab.id, { action: 'start_picking' });
 
   } else if (msg.action === 'get_current_url') {
     sendToDesktop({ action: 'get_current_url_response', requestId: msg.requestId, url: tab.url });
@@ -181,59 +211,53 @@ async function handleDesktopMessage(msg) {
     });
 
   } else if (msg.action === 'validate') {
-    chrome.tabs.sendMessage(tab.id, {
+    sendMessageSafe(tab.id, {
       action: 'validate',
       locator: msg.locator,
       fingerprint: msg.fingerprint,
       collectFingerprint: msg.collectFingerprint
     }, (response) => {
-      if (chrome.runtime.lastError) {
+      if (!response) {
         sendToDesktop({ action: 'validate_response', requestId: msg.requestId, result: null });
         return;
       }
-      if (response) delete response.elements;
+      delete response.elements;
       sendToDesktop({ action: 'validate_response', requestId: msg.requestId, result: response });
     });
 
   } else if (msg.action === 'validate_many') {
-    chrome.tabs.sendMessage(tab.id, {
+    sendMessageSafe(tab.id, {
       action: 'validate_many',
       locators: msg.locators
     }, (results) => {
-      if (chrome.runtime.lastError) {
+      if (!response) {
         sendToDesktop({ action: 'validate_many_response', requestId: msg.requestId, results: null });
         return;
       }
-      sendToDesktop({ action: 'validate_many_response', requestId: msg.requestId, results });
+      sendToDesktop({ action: 'validate_many_response', requestId: msg.requestId, results: response });
     });
 
   } else if (msg.action === 'validate_candidates') {
-    chrome.tabs.sendMessage(tab.id, {
+    sendMessageSafe(tab.id, {
       action: 'validate_candidates',
       candidates: msg.candidates,
       fingerprint: msg.fingerprint
     }, (results) => {
-      if (chrome.runtime.lastError) {
+      if (!response) {
         sendToDesktop({ action: 'validate_candidates_response', requestId: msg.requestId, results: null });
         return;
       }
-      sendToDesktop({ action: 'validate_candidates_response', requestId: msg.requestId, results });
+      sendToDesktop({ action: 'validate_candidates_response', requestId: msg.requestId, results: response });
     });
 
   } else if (msg.action === 'clear_highlight') {
-    chrome.tabs.sendMessage(tab.id, { action: 'clear_highlight' }, () => {
-      if (chrome.runtime.lastError) { /* 忽略 */ }
-    });
+    sendMessageSafe(tab.id, { action: 'clear_highlight' });
 
   } else if (msg.action === 'clear_all_highlights') {
-    chrome.tabs.sendMessage(tab.id, { action: 'clear_all_highlights' }, () => {
-      if (chrome.runtime.lastError) { /* 忽略 */ }
-    });
+    sendMessageSafe(tab.id, { action: 'clear_all_highlights' });
 
   } else if (msg.action === 'update_colors') {
-    chrome.tabs.sendMessage(tab.id, { action: 'update_colors', colors: msg.colors }, () => {
-      if (chrome.runtime.lastError) { /* 忽略 */ }
-    });
+    sendMessageSafe(tab.id, { action: 'update_colors', colors: msg.colors });
   }
 }
 
