@@ -303,7 +303,8 @@ function validateLocator(locator, uniqueId = null) {
     return {
         count: elements.length,
         time: Math.round(duration),
-        elements: elements 
+        elements: elements,
+        debuggerFallback: false
     };
 }
 
@@ -312,11 +313,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'start_picking') {
         startPicking();
     } else if (request.action === 'validate') {
-        const result = validateLocator(request.locator, request.uniqueId); // Pass uniqueId
+        var result = validateLocator(request.locator, request.uniqueId);
         
         // 增强：二次校验
         if (result.count === 1 && request.fingerprint) {
-            const check = Utils.checkSecondaryMatch(result.elements[0], request.fingerprint);
+            var check = Utils.checkSecondaryMatch(result.elements[0], request.fingerprint);
             result.secondaryCheck = check;
         }
         
@@ -328,6 +329,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         
         // 删除 elements 引用避免序列化错误
         delete result.elements;
+        
+        // CSP 降级：标准 DOM 查询返回 0 时，尝试 chrome.debugger 重试
+        if (result.count === 0 && !result.debuggerFallback) {
+            chrome.runtime.sendMessage({
+                action: 'validate_via_debugger',
+                locator: request.locator
+            }, function(debuggerResult) {
+                if (debuggerResult && debuggerResult.count > 0) {
+                    // debugger 找到了元素，覆盖结果
+                    result.count = debuggerResult.count;
+                    result.time += debuggerResult.time;
+                    result.debuggerFallback = true;
+                }
+                sendResponse(result);
+            });
+            return true; // 异步响应
+        }
         
         sendResponse(result);
     } else if (request.action === 'validate_many') {

@@ -91,16 +91,62 @@ async function getCurrentTab() {
   return tab;
 }
 
-// 确保 content script 已注入
-async function ensureContentScript(tabId) {
-  try {
-    await chrome.scripting.executeScript({
-      target: { tabId },
-      files: ['utils.js', 'content_script.js']
-    });
-  } catch (e) {
-    // 可能已注入，忽略
+// ========== 动态脚本注入 ==========
+// 替代静态 content_scripts：按需注入，降低内存占用
+async function injectContentScripts(tabId) {
+  const files = ['utils.js', 'content_script.js'];
+  for (const file of files) {
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: [file]
+      });
+    } catch (e) {
+      // 可能已注入，忽略重复注入错误
+    }
   }
+}
+
+// ========== chrome.debugger 增强验证 ==========
+// 当 content_script 被 CSP 限制导致验证失败时，用 CDP 降级重试
+async function validateViaDebugger(tabId, locator) {
+  let result = { count: 0, time: 0, debuggerFallback: true };
+  const startTime = performance.now();
+
+  try {
+    // 附加调试器
+    await chrome.debugger.attach({ tabId }, '1.3');
+
+    // 构建 CDP 查询表达式
+    let expression;
+    if (locator.type === 'css') {
+      expression = `document.querySelectorAll(${JSON.stringify(locator.value)}).length`;
+    } else if (locator.type === 'xpath') {
+      expression = `document.evaluate(${JSON.stringify(locator.value)}, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength`;
+    } else {
+      expression = '0';
+    }
+
+    // 通过 CDP 的 Runtime.evaluate 执行 DOM 查询（绕过 CSP）
+    const evalResult = await chrome.debugger.sendCommand({ tabId }, 'Runtime.evaluate', {
+      expression: expression,
+      returnByValue: true,
+      replMode: false
+    });
+
+    if (evalResult && evalResult.result && evalResult.result.value !== undefined) {
+      result.count = evalResult.result.value;
+    }
+
+    await chrome.debugger.detach({ tabId });
+  } catch (e) {
+    console.error('[Bridge] debugger 验证失败:', e);
+    // 确保 detach
+    try { await chrome.debugger.detach({ tabId }); } catch (e2) { /* 忽略 */ }
+  }
+
+  result.time = Math.round(performance.now() - startTime);
+  return result;
 }
 
 // ========== 处理来自桌面端的消息 ==========
@@ -111,7 +157,7 @@ async function handleDesktopMessage(msg) {
     return;
   }
 
-  await ensureContentScript(tab.id);
+  await injectContentScripts(tab.id);
 
   if (msg.action === 'start_picking') {
     chrome.tabs.sendMessage(tab.id, { action: 'start_picking' });
@@ -125,7 +171,7 @@ async function handleDesktopMessage(msg) {
         if (tabId === tab.id && changeInfo.status === 'complete') {
           chrome.tabs.onUpdated.removeListener(listener);
           setTimeout(() => {
-            ensureContentScript(tab.id).then(() => {
+            injectContentScripts(tab.id).then(() => {
               sendToDesktop({ action: 'navigate_response', requestId: msg.requestId, success: true });
             });
           }, 500);
@@ -201,6 +247,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // content script 心跳唤醒，仅在断开时重连
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       ensureConnection();
+    }
+  } else if (request.action === 'validate_via_debugger') {
+    // content_script 验证失败后请求 debugger 降级重试
+    var tab = sender.tab;
+    if (tab && tab.id) {
+      validateViaDebugger(tab.id, request.locator).then(function(result) {
+        sendResponse(result);
+      });
+      return true; // 异步响应
+    } else {
+      sendResponse({ count: 0, time: 0, debuggerFallback: true, error: 'no tab' });
     }
   }
 });
