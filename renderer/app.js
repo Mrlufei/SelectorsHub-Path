@@ -247,7 +247,16 @@ function renderCandidates() {
     header.className = 'locator-header';
     const typeTag = document.createElement('span');
     typeTag.className = `type-tag type-${cand.type}`;
-    typeTag.textContent = cand.type;
+    
+    // 如果有子类型信息，显示更详细的标签
+    if (cand.subtype && cand.description) {
+      const lang = currentLang || 'zh';
+      const desc = lang === 'zh' ? cand.description : (cand.descriptionEn || cand.description);
+      typeTag.textContent = `${cand.type.toUpperCase()} · ${desc}`;
+    } else {
+      typeTag.textContent = cand.type.toUpperCase();
+    }
+    
     header.appendChild(typeTag);
 
     const input = document.createElement('input');

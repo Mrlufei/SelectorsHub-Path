@@ -342,19 +342,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 error: error
             });
 
-            // 准备渲染数据
+            // 准备渲染数据 - 高亮所有匹配的元素
             if (elements.length > 0) {
-                const target = elements[0];
-                const rect = target.getBoundingClientRect();
-                if (rect.width > 0 && rect.height > 0) {
-                    let color = customColors.verify;
-                    
-                    overlaysToRender.push({
-                        rect: rect,
-                        color: color,
-                        id: `locator-lab-overlay-${item.id}`
-                    });
-                }
+                elements.forEach((el, idx) => {
+                    const rect = el.getBoundingClientRect();
+                    if (rect.width > 0 && rect.height > 0) {
+                        let color = customColors.verify;
+                        
+                        overlaysToRender.push({
+                            rect: rect,
+                            color: color,
+                            id: `locator-lab-overlay-${item.id}-${idx}`
+                        });
+                    }
+                });
             }
         });
 

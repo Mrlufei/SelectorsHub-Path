@@ -215,6 +215,9 @@ var Utils = window.Utils || {
     if (element.id) {
       candidates.push({
         type: 'css',
+        subtype: 'id-based',
+        description: 'ID选择器',
+        descriptionEn: 'ID selector',
         value: `#${CSS.escape(element.id)}`,
         score: 100
       });
@@ -226,6 +229,9 @@ var Utils = window.Utils || {
       if (element.hasAttribute(attr)) {
         candidates.push({
           type: 'css',
+          subtype: 'attribute-based',
+          description: `属性选择器 (${attr})`,
+          descriptionEn: `Attribute (${attr})`,
           value: `${element.tagName.toLowerCase()}[${attr}="${CSS.escape(element.getAttribute(attr))}"]`,
           score: 90
         });
@@ -240,6 +246,9 @@ var Utils = window.Utils || {
         const classSelector = '.' + classes.map(c => CSS.escape(c)).join('.');
         candidates.push({
           type: 'css',
+          subtype: 'class-based',
+          description: 'Class选择器',
+          descriptionEn: 'Class selector',
           value: `${element.tagName.toLowerCase()}${classSelector}`,
           score: 80
         });
@@ -269,6 +278,9 @@ var Utils = window.Utils || {
     }
     candidates.push({
       type: 'css',
+      subtype: 'hierarchy-path',
+      description: '层级路径',
+      descriptionEn: 'Hierarchy path',
       value: path.join(' > '),
       score: 60
     });
@@ -284,6 +296,9 @@ var Utils = window.Utils || {
     if (element.id) {
       candidates.push({
         type: 'xpath',
+        subtype: 'id-based',
+        description: 'ID定位',
+        descriptionEn: 'ID-based',
         value: `//*[@id="${element.id}"]`,
         score: 100
       });
@@ -316,6 +331,9 @@ var Utils = window.Utils || {
       if (!text.includes("'") && !text.includes('"')) {
           candidates.push({
             type: 'xpath',
+            subtype: 'text-contains',
+            description: '文本包含匹配',
+            descriptionEn: 'Text contains',
             value: `//${element.tagName.toLowerCase()}[contains(text(), '${text}')]`,
             score: 85
           });
@@ -323,6 +341,9 @@ var Utils = window.Utils || {
           // 复杂文本，尝试使用 normalize-space
            candidates.push({
             type: 'xpath',
+            subtype: 'text-exact',
+            description: '文本精确匹配',
+            descriptionEn: 'Text exact',
             value: `//${element.tagName.toLowerCase()}[normalize-space()=${safeText}]`,
             score: 80
           });
@@ -335,6 +356,9 @@ var Utils = window.Utils || {
       if (element.hasAttribute(attr)) {
         candidates.push({
           type: 'xpath',
+          subtype: 'attribute-based',
+          description: `属性定位 (${attr})`,
+          descriptionEn: `Attribute (${attr})`,
           value: `//${element.tagName.toLowerCase()}[@${attr}='${element.getAttribute(attr)}']`,
           score: 90
         });
@@ -380,6 +404,9 @@ var Utils = window.Utils || {
     if (fullPath) {
         candidates.push({
             type: 'xpath',
+            subtype: 'absolute-path',
+            description: '路径定位',
+            descriptionEn: 'Path-based',
             value: fullPath,
             score: 50
         });
