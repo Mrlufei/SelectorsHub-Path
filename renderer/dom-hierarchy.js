@@ -68,6 +68,9 @@ function createDomTreeNode(nodeData, depth, isTarget) {
     nodeEl.className = 'dom-tree-node' + (isTarget ? ' target-element' : '');
     nodeEl.dataset.depth = depth;
     nodeEl.dataset.tagName = nodeData.tagName;
+    // 存储节点数据供点击时使用
+    nodeEl._nodeData = nodeData;
+    nodeEl._isTarget = isTarget;
 
     var indent = document.createTextNode('  '.repeat(depth));
     nodeEl.appendChild(indent);
@@ -83,19 +86,44 @@ function createDomTreeNode(nodeData, depth, isTarget) {
 
     var attrParts = [];
     if (nodeData.id) {
-        attrParts.push(' id="' + nodeData.id + '"');
+        var idKey = document.createElement('span');
+        idKey.className = 'attr-key';
+        idKey.textContent = ' id=';
+        var idValue = document.createElement('span');
+        idValue.className = 'attr-value';
+        idValue.textContent = '"' + nodeData.id + '"';
+        attrParts.push(idKey);
+        attrParts.push(idValue);
     }
     if (nodeData.className) {
+        var classKey = document.createElement('span');
+        classKey.className = 'attr-key';
+        classKey.textContent = ' class=';
         var classes = nodeData.className.split(' ').slice(0, 2);
-        attrParts.push(' class="' + classes.join(' ') + (nodeData.className.split(' ').length > 2 ? '...' : '') + '"');
+        var classValue = document.createElement('span');
+        classValue.className = 'attr-value';
+        classValue.textContent = '"' + classes.join(' ') + (nodeData.className.split(' ').length > 2 ? '...' : '') + '"';
+        attrParts.push(classKey);
+        attrParts.push(classValue);
     }
     if (nodeData.role) {
-        attrParts.push(' role="' + nodeData.role + '"');
+        var roleKey = document.createElement('span');
+        roleKey.className = 'attr-key';
+        roleKey.textContent = ' role=';
+        var roleValue = document.createElement('span');
+        roleValue.className = 'attr-value';
+        roleValue.textContent = '"' + nodeData.role + '"';
+        attrParts.push(roleKey);
+        attrParts.push(roleValue);
     }
 
     var attrSpan = document.createElement('span');
     attrSpan.className = 'dom-tree-attr';
-    attrSpan.textContent = attrParts.join('');
+    
+    // 将属性键值对追加到 attrSpan
+    attrParts.forEach(function(part) {
+        attrSpan.appendChild(part);
+    });
 
     var closeSpan = document.createElement('span');
     closeSpan.className = 'dom-tree-tag';
@@ -115,11 +143,21 @@ function createDomTreeNode(nodeData, depth, isTarget) {
 
     nodeEl.addEventListener('click', function(e) {
         if (e.target.type === 'checkbox') return;
-        document.querySelectorAll('.dom-tree-node').forEach(function(n) { n.classList.remove('selected'); });
+        
+        // 移除所有节点的选中状态
+        document.querySelectorAll('.dom-tree-node').forEach(function(n) { 
+            n.classList.remove('selected'); 
+        });
+        
+        // 添加当前节点的选中状态
         nodeEl.classList.add('selected');
-        if (isTarget) {
-            document.getElementById('attribute-editor').style.display = 'block';
-        }
+        
+        // 确保属性编辑器可见
+        var attributeEditor = document.getElementById('attribute-editor');
+        attributeEditor.style.display = 'block';
+        
+        // 更新属性编辑器显示当前节点的属性
+        renderNodeAttributes(nodeEl._nodeData, nodeEl._isTarget);
     });
 
     return nodeEl;
@@ -230,3 +268,59 @@ function createAttributeRow(attr, targetAttrs, overrideValue) {
 
     return row;
 }
+
+// ========== 显示节点属性（支持任意节点） ==========
+function renderNodeAttributes(nodeData, isTarget) {
+    var attributeList = document.getElementById('attribute-list');
+    
+    // 构建节点属性对象
+    var nodeAttrs = {
+        tagName: nodeData.tagName || '',
+        id: nodeData.id || '',
+        className: nodeData.className || '',
+        name: nodeData.name || '',
+        type: nodeData.type || '',
+        role: nodeData.role || '',
+        placeholder: nodeData.placeholder || '',
+        innerText: nodeData.innerText || '',
+        indexOfType: nodeData.index || 1
+    };
+    
+    // 如果有 dataAttributes，也加入
+    if (nodeData.dataAttributes) {
+        nodeAttrs.dataAttributes = nodeData.dataAttributes;
+    }
+    
+    if (isTarget && currentElementInfo && currentElementInfo.targetAttributes) {
+        // 目标元素：使用完整的 targetAttributes
+        renderAttributeEditor(currentElementInfo);
+    } else {
+        // 非目标节点：显示该节点的基本属性
+        attributeList.innerHTML = '';
+        
+        var editableAttrs = [
+            { name: 'tagName', label: t('label_attr_tagName'), type: 'text' },
+            { name: 'id', label: t('label_attr_id'), type: 'text' },
+            { name: 'className', label: t('label_attr_className'), type: 'text' },
+            { name: 'name', label: t('label_attr_name'), type: 'text' },
+            { name: 'type', label: t('label_attr_type'), type: 'text' },
+            { name: 'role', label: t('label_attr_role'), type: 'text' },
+            { name: 'placeholder', label: t('label_attr_placeholder'), type: 'text' },
+            { name: 'innerText', label: t('label_attr_innerText'), type: 'textarea' },
+            { name: 'indexOfType', label: t('label_attr_indexOfType'), type: 'number' }
+        ];
+        
+        editableAttrs.forEach(function(attr) {
+            var row = createAttributeRow(attr, nodeAttrs);
+            attributeList.appendChild(row);
+        });
+        
+        // 显示提示信息
+        var hint = document.createElement('div');
+        hint.style.cssText = 'padding:8px;color:#8c8c8c;font-size:11px;text-align:center;margin-top:8px;';
+        hint.textContent = isTarget ? '' : '（祖先节点属性仅供参考，无法用于生成定位器）';
+        attributeList.appendChild(hint);
+    }
+}
+
+
