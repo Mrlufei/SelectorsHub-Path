@@ -254,7 +254,17 @@ function renderCandidates() {
     input.type = 'text';
     input.className = 'locator-value';
     input.value = cand.value;
-    input.readOnly = true;
+    input.readOnly = false; // Make input editable
+    
+    // Update the candidate value when input changes
+    input.addEventListener('change', (e) => {
+      currentCandidates[index].value = e.target.value;
+      // Update the status to indicate the locator has been modified
+      const statusEl = item.querySelector('.validation-status');
+      if (statusEl) {
+        statusEl.textContent += ' (已修改)';
+      }
+    });
 
     const actions = document.createElement('div');
     actions.className = 'actions';

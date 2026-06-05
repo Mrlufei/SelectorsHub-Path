@@ -265,8 +265,11 @@ function validateLocator(locator, uniqueId = null) {
              elements[0].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
         }
     } else if (elements.length > 1) {
-        // 多匹配高亮第一个
-        updateOverlay(elements[0], '#faad14', `匹配到 ${elements.length} 个元素 (第 1 个)`, uniqueId); 
+        // 多匹配时高亮全部元素
+        clearAllHighlights();
+        elements.forEach((el, i) => {
+            updateOverlay(el, customColors.verify, `匹配 ${i + 1}/${elements.length}`, uniqueId ? `${uniqueId}-multi-${i}` : `multi-${i}`);
+        });
         if (!uniqueId) {
              elements[0].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
         }
@@ -344,8 +347,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 const target = elements[0];
                 const rect = target.getBoundingClientRect();
                 if (rect.width > 0 && rect.height > 0) {
-                    let color = '#faad14'; 
-                    if (elements.length === 1) color = customColors.verify;
+                    let color = customColors.verify;
                     
                     overlaysToRender.push({
                         rect: rect,
@@ -436,7 +438,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // 直接高亮逻辑（用于回放）
         validateLocator(request.locator);
     } else if (request.action === 'clear_highlight') {
-        hideOverlay();
+        clearAllHighlights();
     } else if (request.action === 'clear_all_highlights') {
         clearAllHighlights();
     }

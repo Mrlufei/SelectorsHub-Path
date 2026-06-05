@@ -110,6 +110,16 @@ main {
     border: 1px solid var(--border-color); border-radius: 2px;
     box-sizing: border-box; background: var(--pane-bg); color: var(--text-color);
 }
+
+.locator-value:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 1px;
+}
+
+.locator-item.modified .locator-value {
+    background-color: #e6f7ff;
+    border-color: #91d5ff;
+}
 .actions { display: flex; gap: 8px; justify-content: flex-end; }
 
 .saved-group { margin-bottom: 16px; }

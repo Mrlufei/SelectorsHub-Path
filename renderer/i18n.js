@@ -64,7 +64,9 @@ const I18N = {
     'yingdao_export_success': '导出至影刀成功！共写入 {n} 个分组。',
     'yingdao_export_empty': '暂无数据可导出至影刀。',
     'yingdao_export_no_selection': '请先勾选要导出的元素。',
-    'yingdao_skipped_desktop': '已跳过 {n} 个桌面端选择器（仅支持 Web 元素）。'
+    'yingdao_skipped_desktop': '已跳过 {n} 个桌面端选择器（仅支持 Web 元素）。',
+    'msg_locator_modified': '定位器已修改',
+    'label_editable': '可编辑'
   },
   'en': {
     'title': 'Xpath Repair',
@@ -126,7 +128,9 @@ const I18N = {
     'yingdao_export_success': 'Exported {n} groups to YingDao.',
     'yingdao_export_empty': 'No data to export to YingDao.',
     'yingdao_export_no_selection': 'Please select elements to export first.',
-    'yingdao_skipped_desktop': 'Skipped {n} desktop selectors (Web only).'
+    'yingdao_skipped_desktop': 'Skipped {n} desktop selectors (Web only).',
+    'msg_locator_modified': 'Locator modified',
+    'label_editable': 'Editable'
   }
 };
 
