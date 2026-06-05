@@ -177,3 +177,167 @@ input[type="color"] { border: none; width: 30px; height: 30px; cursor: pointer; 
 .data-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
 .data-actions-grid .btn { width: 100%; text-align: center; font-size: 12px; padding: 8px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .btn-icon { width: 14px; height: 14px; vertical-align: middle; margin-right: 2px; }
+
+/* ========== DOM 层级树样式 ========== */
+.dom-tree-container {
+    max-height: 300px;
+    overflow-y: auto;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 8px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 12px;
+}
+
+.dom-tree-node {
+    padding: 4px 0;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.2s;
+    user-select: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dom-tree-node:hover {
+    background: rgba(24, 144, 255, 0.1);
+}
+
+.dom-tree-node.selected {
+    background: rgba(24, 144, 255, 0.2);
+    border-left: 3px solid var(--primary-color);
+}
+
+.dom-tree-node.target-element {
+    background: rgba(82, 196, 26, 0.2);
+    border-left: 3px solid #52c41a;
+    font-weight: bold;
+}
+
+.dom-tree-checkbox {
+    margin-right: 6px;
+    cursor: pointer;
+}
+
+.dom-tree-tag {
+    color: #1890ff;
+    font-weight: 600;
+}
+
+.dom-tree-attr {
+    color: #fa8c16;
+    margin-left: 4px;
+}
+
+.dom-tree-attr-value {
+    color: #52c41a;
+}
+
+.dom-tree-text {
+    color: #8c8c8c;
+    font-style: italic;
+    margin-left: 8px;
+    font-size: 11px;
+}
+
+.dom-tree-indent {
+    display: inline-block;
+    width: 20px;
+}
+
+/* ========== 属性编辑器样式 ========== */
+.attribute-editor {
+    margin-top: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--pane-bg);
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--secondary-bg);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.attribute-list {
+    padding: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.attribute-row {
+    display: grid;
+    grid-template-columns: 30px 120px 80px 1fr 60px;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.attribute-row:last-child {
+    border-bottom: none;
+}
+
+.attribute-row input[type="checkbox"] {
+    cursor: pointer;
+}
+
+.attribute-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.attribute-match-type {
+    padding: 2px 4px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    font-size: 11px;
+    background: var(--pane-bg);
+    color: var(--text-color);
+}
+
+.attribute-value {
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: monospace;
+    background: var(--pane-bg);
+    color: var(--text-color);
+}
+
+.attribute-value:focus {
+    outline: 2px solid var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-fx {
+    padding: 2px 6px;
+    font-size: 11px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    background: var(--secondary-bg);
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+.btn-fx:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.attribute-editor textarea.attribute-value {
+    resize: vertical;
+    min-height: 40px;
+    font-size: 11px;
+}
+
+

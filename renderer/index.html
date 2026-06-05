@@ -6,6 +6,15 @@
     <link rel="stylesheet" href="styles.css">
     <script src="utils.js"></script>
     <script src="i18n.js"></script>
+    <script src="state.js"></script>
+    <script src="extension.js"></script>
+    <script src="dom-hierarchy.js"></script>
+    <script src="locator-generator.js"></script>
+    <script src="candidates.js"></script>
+    <script src="saved-elements.js"></script>
+    <script src="repair.js"></script>
+    <script src="settings.js"></script>
+    <script src="io.js"></script>
     <script src="yingdao.js"></script>
     <script src="app.js" defer></script>
 </head>
@@ -55,6 +64,24 @@
                         <input type="text" id="element-name-input" data-i18n="placeholder_name" placeholder="输入元素名称 (例如: 登录按钮)" style="width: 100%; padding: 6px; border: 1px solid #d9d9d9; border-radius: 4px; box-sizing: border-box;">
                         <button id="btn-save" class="btn" style="width: 100%;" disabled data-i18n="btn_save">💾 保存选中定位器</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 区域 1.5: DOM 层级树展示 -->
+        <div class="pane" id="dom-hierarchy-pane" style="display: none;">
+            <div class="section-title" id="dom-hierarchy-header" style="cursor: pointer; display: flex; align-items: center;">
+                <span class="arrow-icon">▼</span>
+                <span data-i18n="section_dom_hierarchy">元素节点 (网页结构)</span>
+            </div>
+            <div id="dom-hierarchy-content">
+                <div id="dom-tree-container" class="dom-tree-container"></div>
+                <div id="attribute-editor" class="attribute-editor" style="display: none;">
+                    <div class="editor-header">
+                        <span data-i18n="label_attr_config">📝 属性配置</span>
+                        <button class="btn secondary" id="btn-generate-locator" style="padding: 2px 8px; font-size: 12px;" data-i18n="btn_generate_locator">🔄 生成定位器</button>
+                    </div>
+                    <div id="attribute-list" class="attribute-list"></div>
                 </div>
             </div>
         </div>
