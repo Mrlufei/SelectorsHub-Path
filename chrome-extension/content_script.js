@@ -188,17 +188,34 @@ function onClick(e) {
         type: target.getAttribute('type'),
         url: window.location.href,
         candidates: candidates,
-        // 自愈数据采集：使用优化版祖先链（动态深度 + 智能剪枝）
+        // 自愈数据采集
         fingerprint: Utils.getFingerprint(target),
+        // 完整祖先链（不过滤，用于UI层级展示）
         ancestorChain: Utils.getAncestorChainOptimized(target, {
-            enablePruning: true
+            enablePruning: false,
+            includeAllLevels: true
         }),
-        // 新增：相似元素（批量场景支持）
+        // 相似元素（批量场景支持）
         similarElements: Utils.findSimilarElements(target, 0.7, 50).map(item => ({
             tagName: item.element.tagName,
             similarity: item.similarity,
             text: item.element.innerText ? item.element.innerText.substring(0, 50) : ''
-        }))
+        })),
+        // 目标元素详细属性（用于属性编辑器）
+        targetAttributes: {
+            tagName: target.tagName.toLowerCase(),
+            id: target.id || '',
+            className: target.className || '',
+            name: target.getAttribute('name') || '',
+            type: target.getAttribute('type') || '',
+            role: target.getAttribute('role') || '',
+            placeholder: target.getAttribute('placeholder') || '',
+            innerText: target.innerText ? target.innerText.trim() : '',
+            indexOfType: Utils.getElementIndex(target),
+            dataAttributes: Array.from(target.attributes)
+                .filter(attr => attr.name.startsWith('data-'))
+                .map(attr => ({ name: attr.name, value: attr.value }))
+        }
     };
 
     // 发送回 Panel

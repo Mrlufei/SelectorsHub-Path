@@ -581,5 +581,16 @@ var Utils = window.Utils || {
     }
 
     return candidates;
-  }
+  },
+
+  /**
+   * 获取元素在同级同标签元素中的索引（从1开始）
+   */
+  getElementIndex: (element) => {
+    if (!element.parentElement) return 1;
+    const siblings = Array.from(element.parentElement.children)
+      .filter(s => s.tagName === element.tagName);
+    return siblings.indexOf(element) + 1;
+  },
+
 };
