@@ -13,7 +13,8 @@
     "scripting",
     "storage",
     "alarms",
-    "offscreen"
+    "offscreen",
+    "debugger"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -25,13 +26,6 @@
     "default_title": "Xpath Repair Bridge",
     "default_icon": "icon.png"
   },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["utils.js", "content_script.js"],
-      "run_at": "document_end"
-    }
-  ],
   "web_accessible_resources": [
     {
       "resources": ["utils.js"],
