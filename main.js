@@ -239,7 +239,29 @@ app.whenReady().then(() => {
   createWindow();
 });
 
-app.on('window-all-closed', () => {
-  if (wss) wss.close();
+// ========== 优雅退出 ==========
+function gracefulShutdown() {
+  if (wss) {
+    try { wss.close(); } catch(e) { /* 忽略 */ }
+    wss = null;
+  }
+  if (mainWindow) {
+    try { mainWindow.close(); } catch(e) { /* 忽略 */ }
+    mainWindow = null;
+  }
   app.quit();
+}
+
+// 处理 IDE/用户 手动停止（SIGINT / SIGTERM）
+process.on('SIGINT', () => {
+  console.log('[Main] 收到 SIGINT，正在关闭...');
+  gracefulShutdown();
+});
+process.on('SIGTERM', () => {
+  console.log('[Main] 收到 SIGTERM，正在关闭...');
+  gracefulShutdown();
+});
+
+app.on('window-all-closed', () => {
+  gracefulShutdown();
 });
