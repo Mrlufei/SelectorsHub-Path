@@ -230,11 +230,11 @@ async function handleDesktopMessage(msg) {
       action: 'validate_many',
       locators: msg.locators
     }, (results) => {
-      if (!response) {
+      if (!results) {
         sendToDesktop({ action: 'validate_many_response', requestId: msg.requestId, results: null });
         return;
       }
-      sendToDesktop({ action: 'validate_many_response', requestId: msg.requestId, results: response });
+      sendToDesktop({ action: 'validate_many_response', requestId: msg.requestId, results: results });
     });
 
   } else if (msg.action === 'validate_candidates') {
@@ -243,11 +243,11 @@ async function handleDesktopMessage(msg) {
       candidates: msg.candidates,
       fingerprint: msg.fingerprint
     }, (results) => {
-      if (!response) {
+      if (!results) {
         sendToDesktop({ action: 'validate_candidates_response', requestId: msg.requestId, results: null });
         return;
       }
-      sendToDesktop({ action: 'validate_candidates_response', requestId: msg.requestId, results: response });
+      sendToDesktop({ action: 'validate_candidates_response', requestId: msg.requestId, results: results });
     });
 
   } else if (msg.action === 'clear_highlight') {
