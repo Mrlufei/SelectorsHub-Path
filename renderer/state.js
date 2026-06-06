@@ -35,4 +35,8 @@ let savedCollapse = null;
 // 连接状态
 let hasEverConnected = false;
 
+// 相似捕获流程
+let firstElementInfo = null;
+let isSimilarCaptureMode = false;
+
 // 当前语言（定义于 i18n.js，此处不重复声明）

@@ -285,3 +285,88 @@ function buildCombinedXpath(attrs, checkedNodes) {
     if (conditions.length === 0) return null;
     return '//' + pathParts.join('/') + '[' + conditions.join('][') + ']';
 }
+
+// ========== 相似元素定位器生成 ==========
+// 从两个元素样本中提取共同属性，生成定位器候选
+// 被 extension.js 中 element_picked 分支在相似捕获模式下调用
+function generateSimilarLocators(sample1, sample2) {
+    var attrs1 = sample1.targetAttributes;
+    var attrs2 = sample2.targetAttributes;
+    if (!attrs1 || !attrs2) return;
+
+    var commonAttrs = [];
+
+    // 1. tagName — 必须相同
+    if (attrs1.tagName && attrs2.tagName && attrs1.tagName === attrs2.tagName) {
+        commonAttrs.push({ name: 'tagName', matchType: t('match_equals'), value: attrs1.tagName });
+    }
+
+    // 2. id — 两者相同且非空
+    if (attrs1.id && attrs2.id && attrs1.id === attrs2.id) {
+        commonAttrs.push({ name: 'id', matchType: t('match_equals'), value: attrs1.id });
+    }
+
+    // 3. className — 取共同 class 的交集
+    if (attrs1.className && attrs2.className) {
+        var classes1 = attrs1.className.split(/\s+/).filter(Boolean);
+        var classes2 = attrs2.className.split(/\s+/).filter(Boolean);
+        var commonClasses = classes1.filter(function(c) { return classes2.indexOf(c) >= 0; });
+        if (commonClasses.length > 0) {
+            commonAttrs.push({ name: 'className', matchType: t('match_equals'), value: commonClasses.join(' ') });
+        }
+    }
+
+    // 4. name / type / role / placeholder — 取相同值
+    var scalarAttrs = ['name', 'type', 'role', 'placeholder'];
+    scalarAttrs.forEach(function(attrName) {
+        if (attrs1[attrName] && attrs2[attrName] && attrs1[attrName] === attrs2[attrName]) {
+            commonAttrs.push({ name: attrName, matchType: t('match_equals'), value: attrs1[attrName] });
+        }
+    });
+
+    // 5. innerText — 取较短的，用 contains 匹配（因为两个样本文本不同）
+    if (attrs1.innerText && attrs2.innerText) {
+        var shorterText = attrs1.innerText.length <= attrs2.innerText.length ? attrs1.innerText : attrs2.innerText;
+        commonAttrs.push({ name: 'innerText', matchType: t('match_contains'), value: shorterText });
+    }
+
+    // 6. dataAttributes — 取键值完全相同的
+    if (attrs1.dataAttributes && attrs2.dataAttributes && attrs1.dataAttributes.length > 0 && attrs2.dataAttributes.length > 0) {
+        attrs1.dataAttributes.forEach(function(d1) {
+            var found = attrs2.dataAttributes.some(function(d2) {
+                return d1.name === d2.name && d1.value === d2.value;
+            });
+            if (found) {
+                commonAttrs.push({ name: d1.name, matchType: t('match_equals'), value: d1.value });
+            }
+        });
+    }
+
+    if (commonAttrs.length === 0) {
+        alert(t('msg_select_one_attr'));
+        return;
+    }
+
+    // 生成候选并推入 currentCandidates
+    var checkedNodes = [];
+    var candidates = buildCandidateList(commonAttrs, checkedNodes);
+    if (candidates.length === 0) return;
+
+    // 直接取评分最高的（不等待异步校验，但立即调用 validateCandidate）
+    var best = candidates[0];
+    var newCandidates = [{
+        type: best.type,
+        subtype: 'user-generated',
+        description: t('similar_generated'),
+        descriptionEn: 'Common Feature',
+        value: best.value,
+        score: 90
+    }];
+
+    currentCandidates = newCandidates.concat(currentCandidates);
+    renderCandidates();
+    if (currentCandidates.length > 0) {
+        validateCandidate(0);
+    }
+    alert(t('msg_locator_generated'));
+}

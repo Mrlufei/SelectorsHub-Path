@@ -25,6 +25,12 @@ function initExtensionCommunication() {
   window.electronAPI.onFromExtension(function(msg) {
     if (msg.action === 'element_picked') {
       handleElementPicked(msg.payload);
+      // 相似捕获模式：用第1个元素与当前元素生成共同特征定位器
+      if (isSimilarCaptureMode && firstElementInfo) {
+        generateSimilarLocators(firstElementInfo, msg.payload);
+        isSimilarCaptureMode = false;
+        firstElementInfo = null;
+      }
     } else if (msg.action === 'picking_stopped') {
       btnPick.innerText = t('btn_pick');
       btnPick.disabled = !extensionConnected;
