@@ -85,7 +85,11 @@ const I18N = {
     'match_starts': '起始',
     'match_regex': '正则',
     'msg_select_one_attr': '请至少选择一个属性',
-    'msg_locator_generated': '定位器已生成，请验证'
+    'msg_locator_generated': '定位器已生成，请验证',
+    'btn_similar_capture': '🔍 二步捕获',
+    'similar_capture_title': '二步捕获相似元素',
+    'similar_capture_desc': '<ol><li>点击「捕获第一个元素」按钮，在网页上选择目标</li><li>点击「捕获第二个元素」按钮，选择同类型的另一个样本</li><li>系统自动计算共同特征，扫描全页匹配元素</li><li>批量生成定位器候选 + 自动校验</li></ol>',
+    'btn_got_it': '知道了'
   },
   'en': {
     'title': 'Xpath Repair',
@@ -168,7 +172,11 @@ const I18N = {
     'match_starts': 'Starts With',
     'match_regex': 'Regex',
     'msg_select_one_attr': 'Please select at least one attribute',
-    'msg_locator_generated': 'Locator generated, please verify'
+    'msg_locator_generated': 'Locator generated, please verify',
+    'btn_similar_capture': '🔍 2-Step Capture',
+    'similar_capture_title': '2-Step Similar Element Capture',
+    'similar_capture_desc': '<ol><li>Click "Capture First Element", select the target on the page</li><li>Click "Capture Second Element", select another sample of the same type</li><li>System auto-calculates common features and scans the page</li><li>Batch generates locator candidates + auto-validation</li></ol>',
+    'btn_got_it': 'Got it'
   }
 };
 

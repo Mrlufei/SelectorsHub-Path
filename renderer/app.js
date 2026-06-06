@@ -48,12 +48,10 @@ function setupCollapse(headerId, containerId, defaultExpanded = false) {
   return {
     get isExpanded() { return isExpanded; },
     expand: () => {
-      if (!isExpanded) {
-        isExpanded = true;
-        container.style.display = container.classList.contains('locator-list') ? 'flex' : 'block';
-        const arrow = header.querySelector('.arrow-icon');
-        if (arrow) arrow.classList.remove('collapsed');
-      }
+      isExpanded = true;
+      container.style.display = container.classList.contains('locator-list') ? 'flex' : 'block';
+      const arrow = header.querySelector('.arrow-icon');
+      if (arrow) arrow.classList.remove('collapsed');
     }
   };
 }
@@ -149,6 +147,21 @@ const btnGenerateLocator = document.getElementById('btn-generate-locator');
 if (btnGenerateLocator) {
   btnGenerateLocator.addEventListener('click', function() {
     generateLocatorFromAttributes();
+  });
+}
+
+// ========== 二步捕获弹窗 ==========
+const btnSimilarCapture = document.getElementById('btn-similar-capture');
+const similarModal = document.getElementById('similar-capture-modal');
+if (btnSimilarCapture && similarModal) {
+  btnSimilarCapture.addEventListener('click', function() {
+    similarModal.style.display = 'flex';
+  });
+  var closeModal = function() { similarModal.style.display = 'none'; };
+  document.getElementById('btn-close-modal')?.addEventListener('click', closeModal);
+  document.getElementById('btn-close-modal-btn')?.addEventListener('click', closeModal);
+  similarModal.addEventListener('click', function(e) {
+    if (e.target === similarModal) closeModal();
   });
 }
 

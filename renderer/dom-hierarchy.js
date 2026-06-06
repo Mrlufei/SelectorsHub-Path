@@ -11,11 +11,11 @@ function handleElementPicked(payload) {
   infoCollapse.expand();
   candidatesCollapse.expand();
 
-  infoTag.textContent = payload.tagName;
-  infoId.textContent = payload.id || '-';
-  infoClass.textContent = payload.className || '-';
-  infoName.textContent = payload.name || '-';
-  infoText.textContent = payload.innerText || '-';
+  infoTag.value = payload.tagName;
+  infoId.value = payload.id || '';
+  infoClass.value = payload.className || '';
+  infoName.value = payload.name || '';
+  infoText.value = payload.innerText || '';
 
   elementNameInput.value = payload.innerText ?
     payload.innerText.substring(0, 20) :
