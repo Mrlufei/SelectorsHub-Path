@@ -1,2 +1,10 @@
 /node_modules/
 /doc/
+
+# IDE / Workspace
+.idea/
+.codegraph/
+.reasonix/
+reasonix.toml
+AGENTS.md
+$null
