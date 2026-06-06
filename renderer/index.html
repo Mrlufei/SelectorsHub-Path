@@ -42,7 +42,10 @@
 
     <header>
         <h2>Xpath Repair <span style="font-size:11px; font-weight:normal; color:#999;">测试版v0.2</span></h2>
-        <button id="btn-pick" class="btn" data-i18n="btn_pick" disabled>🖱️ 捕获元素</button>
+        <div style="display:flex; gap:4px; flex-wrap:wrap;">
+            <button id="btn-pick" class="btn" data-i18n="btn_pick" disabled>🖱️ 捕获元素</button>
+            <button id="btn-similar-capture" class="btn" style="padding:4px 8px; font-size:12px;" data-i18n="btn_similar_capture">🔍 二步捕获</button>
+        </div>
     </header>
 
     <main>
@@ -53,11 +56,11 @@
             </div>
             <div id="info-content-container" style="display: none;">
                 <div id="element-info" class="info-grid">
-                    <div class="label" data-i18n="label_tag">标签:</div><div class="value" id="info-tag">-</div>
-                    <div class="label" data-i18n="label_id">ID:</div><div class="value" id="info-id">-</div>
-                    <div class="label" data-i18n="label_class">Class:</div><div class="value" id="info-class">-</div>
-                    <div class="label" data-i18n="label_name">Name:</div><div class="value" id="info-name">-</div>
-                    <div class="label" data-i18n="label_text">文本:</div><div class="value" id="info-text">-</div>
+                    <div class="label" data-i18n="label_tag">标签:</div><input type="text" id="info-tag" class="info-input">
+                    <div class="label" data-i18n="label_id">ID:</div><input type="text" id="info-id" class="info-input">
+                    <div class="label" data-i18n="label_class">Class:</div><input type="text" id="info-class" class="info-input">
+                    <div class="label" data-i18n="label_name">Name:</div><input type="text" id="info-name" class="info-input">
+                    <div class="label" data-i18n="label_text">文本:</div><textarea id="info-text" class="info-input" rows="2"></textarea>
                 </div>
                 <div style="margin-top: 12px;">
                     <div class="info-grid" style="grid-template-columns: 1fr;">
@@ -116,10 +119,10 @@
         <!-- 底部数据管理区域 -->
         <div class="pane data-management-pane">
             <div class="data-actions-grid">
-                <button id="btn-export" class="btn secondary" data-i18n="btn_export">📤 导出数据</button>
-                <button id="btn-import" class="btn secondary" data-i18n="btn_import">📥 导入数据</button>
-                <button id="btn-export-yingdao" class="btn secondary"><img src="yingdao-icon.png" class="btn-icon"> 勾选导出至影刀</button>
-                <button id="btn-import-yingdao" class="btn secondary"><img src="yingdao-icon.png" class="btn-icon"> 从影刀导入</button>
+                <button id="btn-export" class="btn secondary" data-i18n="btn_export" style="display:none;">📤 导出数据</button>
+                <button id="btn-import" class="btn secondary" data-i18n="btn_import" style="display:none;">📥 导入数据</button>
+                <button id="btn-export-yingdao" class="btn secondary" style="display:none;"><img src="yingdao-icon.png" class="btn-icon"> 勾选导出至影刀</button>
+                <button id="btn-import-yingdao" class="btn secondary" style="display:none;"><img src="yingdao-icon.png" class="btn-icon"> 从影刀导入</button>
             </div>
             <input type="file" id="file-import" accept=".json" style="display: none;">
         </div>
@@ -162,7 +165,7 @@
                 <div class="value"><input type="color" id="color-verify" value="#52c41a"></div>
             </div>
             <!-- 影刀目录 -->
-            <div class="setting-item">
+            <div class="setting-item" style="display:none;">
                 <div class="label" data-i18n="label_yingdao_dir">影刀流程目录</div>
                 <div class="value" style="display: flex; gap: 4px; align-items: center;">
                     <span id="yingdao-dir-display" style="font-size: 11px; color: #999; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">未设置</span>
@@ -170,18 +173,27 @@
                 </div>
             </div>
             <!-- 安装桥接扩展 -->
-            <div class="setting-item">
-                <div class="label" data-i18n="label_install_extension">安装浏览器插件</div>
-                <div class="value" style="display: flex; gap: 4px; align-items: center;">
-                    <button id="btn-install-extension" class="btn secondary" style="padding: 2px 6px; font-size: 11px;" data-i18n="btn_install_extension">📂 打开插件目录</button>
-                </div>
-            </div>
-            <!-- 作者信息 -->
-            <div style="text-align:center; padding:8px 0 4px; font-size:11px; color:#999; border-top:1px solid var(--border-color); margin-top:8px;">
-                作者：步月<br>
-                <span style="font-size:10px;">联系作者wx：lyh2czy</span>
-            </div>
         </div>
     </footer>
+    <!-- ========== 二步捕获说明弹窗 ========== -->
+    <div id="similar-capture-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <span data-i18n="similar_capture_title">二步捕获相似元素</span>
+                <span id="btn-close-modal" class="modal-close">×</span>
+            </div>
+            <div class="modal-body" data-i18n="similar_capture_desc">
+                <ol>
+                    <li>点击「捕获第一个元素」按钮，在网页上选择目标</li>
+                    <li>点击「捕获第二个元素」按钮，选择同类型的另一个样本</li>
+                    <li>系统自动计算共同特征，扫描全页匹配元素</li>
+                    <li>批量生成定位器候选 + 自动校验</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="btn-close-modal-btn" data-i18n="btn_got_it">知道了</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

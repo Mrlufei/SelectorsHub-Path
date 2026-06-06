@@ -76,7 +76,6 @@ function generateLocatorFromAttributes() {
             if (timeoutId) clearTimeout(timeoutId);
             if (!results || results.length === 0) {
                 adoptBestCandidate(candidates[0]);
-                alert(t('msg_locator_generated'));
                 return;
             }
 
@@ -100,7 +99,6 @@ function generateLocatorFromAttributes() {
                 // 没有精确匹配的候选，用评分最高的原始候选
                 adoptBestCandidate(candidates[0]);
             }
-            alert(t('msg_locator_generated'));
         });
 
         sendToExtension({
@@ -114,13 +112,11 @@ function generateLocatorFromAttributes() {
         timeoutId = setTimeout(function() {
             pendingValidations.delete(requestId);
             adoptBestCandidate(candidates[0]);
-            alert(t('msg_locator_generated'));
         }, 5000);
         // 响应异步到达 callback，不阻塞
     } else {
         // ===== 未连接：直接用评分最高的 =====
         adoptBestCandidate(candidates[0]);
-        alert(t('msg_locator_generated'));
     }
 }
 
