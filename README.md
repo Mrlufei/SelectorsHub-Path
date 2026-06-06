@@ -1,4 +1,4 @@
-# Xpath Repair 🔧
+# SelectorsHub-Path 🔧
 
 一款面向自动化测试工程师的**元素定位采集、验证与自修复**桌面工具。
 
@@ -180,7 +180,7 @@ xpath-repair-desktop/
 
 ## 致谢
 
-本项目基于 **步月** 的原作 `Xpath Repair` 进行功能增强与优化。感谢原作者的卓越工作，为本项目奠定了坚实的基础。
+本项目基于 **步月** 的原作 [Xpath Repair](https://github.com/lwhx/Xpath-Repair) 进行功能增强与优化。感谢原作者的卓越工作，为本项目奠定了坚实的基础。
 
 ## 📄 License
 
