@@ -150,18 +150,20 @@ if (btnGenerateLocator) {
   });
 }
 
-// ========== 二步捕获弹窗 ==========
+// ========== 捕获相似元素按钮 ==========
 const btnSimilarCapture = document.getElementById('btn-similar-capture');
-const similarModal = document.getElementById('similar-capture-modal');
-if (btnSimilarCapture && similarModal) {
+if (btnSimilarCapture) {
   btnSimilarCapture.addEventListener('click', function() {
-    similarModal.style.display = 'flex';
-  });
-  var closeModal = function() { similarModal.style.display = 'none'; };
-  document.getElementById('btn-close-modal')?.addEventListener('click', closeModal);
-  document.getElementById('btn-close-modal-btn')?.addEventListener('click', closeModal);
-  similarModal.addEventListener('click', function(e) {
-    if (e.target === similarModal) closeModal();
+    if (!currentElementInfo) {
+      alert(t('msg_pick_first'));
+      return;
+    }
+    firstElementInfo = currentElementInfo;
+    isSimilarCaptureMode = true;
+    if (sendToExtension({ action: 'start_picking' })) {
+      btnPick.innerText = t('btn_picking');
+      btnPick.disabled = true;
+    }
   });
 }
 
