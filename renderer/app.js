@@ -3,14 +3,7 @@
 
 // ========== UI 元素引用 ==========
 const btnPick = document.getElementById('btn-pick');
-const btnSave = document.getElementById('btn-save');
 const btnDeleteSelected = document.getElementById('btn-delete-selected');
-const infoTag = document.getElementById('info-tag');
-const infoId = document.getElementById('info-id');
-const infoClass = document.getElementById('info-class');
-const infoName = document.getElementById('info-name');
-const infoText = document.getElementById('info-text');
-const elementNameInput = document.getElementById('element-name-input');
 const candidatesList = document.getElementById('candidates-list');
 const savedList = document.getElementById('saved-list');
 const searchInput = document.getElementById('search-input');
@@ -56,22 +49,17 @@ function setupCollapse(headerId, containerId, defaultExpanded = false) {
   };
 }
 
-infoCollapse = setupCollapse('info-header', 'info-content-container');
 candidatesCollapse = setupCollapse('candidates-header', 'candidates-list');
 savedCollapse = setupCollapse('saved-header', 'saved-list');
 
 // ========== 拾取按钮 ==========
 btnPick.addEventListener('click', () => {
+  // 取消相似捕获模式（如果有）
+  isSimilarCaptureMode = false;
+  firstElementInfo = null;
   if (sendToExtension({ action: 'start_picking' })) {
     btnPick.innerText = t('btn_picking');
     btnPick.disabled = true;
-  }
-});
-
-// ========== 保存按钮 ==========
-btnSave.addEventListener('click', () => {
-  if (selectedLocatorIndex >= 0 && currentElementInfo) {
-    saveElement(currentCandidates[selectedLocatorIndex]);
   }
 });
 
@@ -169,9 +157,6 @@ if (btnSimilarCapture) {
 
 // ========== 设置初始化 ==========
 initSettings();
-
-// ========== 数据导入导出初始化 ==========
-initIO();
 
 // ========== 延迟加载设置 ==========
 loadSettings();

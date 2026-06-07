@@ -8,18 +8,7 @@ function handleElementPicked(payload) {
   btnPick.innerText = t('btn_pick');
   btnPick.disabled = !extensionConnected;
 
-  infoCollapse.expand();
   candidatesCollapse.expand();
-
-  infoTag.value = payload.tagName;
-  infoId.value = payload.id || '';
-  infoClass.value = payload.className || '';
-  infoName.value = payload.name || '';
-  infoText.value = payload.innerText || '';
-
-  elementNameInput.value = payload.innerText ?
-    payload.innerText.substring(0, 20) :
-    (payload.id ? payload.tagName + '#' + payload.id : payload.tagName);
 
   // DOM 层级树渲染
   renderDomHierarchy(payload);
@@ -35,6 +24,7 @@ function renderDomHierarchy(payload) {
     var pane = document.getElementById('dom-hierarchy-pane');
     var container = document.getElementById('dom-tree-container');
     var attributeEditor = document.getElementById('attribute-editor');
+    if (!pane || !container || !attributeEditor) return;
 
     if (!payload.ancestorChain || payload.ancestorChain.length === 0) {
         pane.style.display = 'none';
@@ -154,7 +144,7 @@ function createDomTreeNode(nodeData, depth, isTarget) {
         
         // 确保属性编辑器可见
         var attributeEditor = document.getElementById('attribute-editor');
-        attributeEditor.style.display = 'block';
+        if (attributeEditor) attributeEditor.style.display = 'block';
         
         // 更新属性编辑器显示当前节点的属性
         renderNodeAttributes(nodeEl._nodeData, nodeEl._isTarget);
@@ -323,42 +313,6 @@ function renderNodeAttributes(nodeData, isTarget) {
     }
 }
 
-// ========== 相似元素列表渲染 ==========
-function renderSimilarElements(similarElements) {
-    var pane = document.getElementById('similar-elements-pane');
-    var list = document.getElementById('similar-elements-list');
-    var title = document.getElementById('similar-elements-title');
-    if (!pane || !list || !title) return;
 
-    if (!similarElements || similarElements.length === 0) {
-        pane.style.display = 'none';
-        return;
-    }
-
-    pane.style.display = 'block';
-    title.textContent = t('similar_elements_title', { n: similarElements.length });
-    list.innerHTML = '';
-    list.style.display = 'block';
-
-    similarElements.forEach(function(item, index) {
-        var row = document.createElement('div');
-        row.style.cssText = 'padding:4px 0; border-bottom:1px solid var(--border-color); font-size:12px; display:flex; align-items:center; gap:8px;';
-
-        var idxSpan = document.createElement('span');
-        idxSpan.style.cssText = 'color:#999; min-width:20px;';
-        idxSpan.textContent = (index + 1) + '.';
-
-        var infoSpan = document.createElement('span');
-        infoSpan.style.cssText = 'flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;';
-        var pct = Math.round(item.similarity * 100);
-        var textPreview = item.text ? item.text.substring(0, 30) : '';
-        infoSpan.textContent = '<' + item.tagName + '> ' + t('similar_item', { pct: pct, text: textPreview });
-        infoSpan.title = t('similar_item', { pct: pct, text: item.text || '' });
-
-        row.appendChild(idxSpan);
-        row.appendChild(infoSpan);
-        list.appendChild(row);
-    });
-}
 
 

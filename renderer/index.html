@@ -15,7 +15,6 @@
     <script src="repair.js"></script>
     <script src="settings.js"></script>
     <script src="io.js"></script>
-    <script src="yingdao.js"></script>
     <script src="app.js" defer></script>
 </head>
 <body>
@@ -49,29 +48,6 @@
     </header>
 
     <main>
-        <!-- 区域 1: 当前选中元素信息 -->
-        <div class="pane">
-            <div class="section-title" id="info-header" style="cursor: pointer; display: flex; align-items: center;">
-                <span class="arrow-icon collapsed">▼</span> <span data-i18n="section_info">当前元素信息</span>
-            </div>
-            <div id="info-content-container" style="display: none;">
-                <div id="element-info" class="info-grid">
-                    <div class="label" data-i18n="label_tag">标签:</div><input type="text" id="info-tag" class="info-input">
-                    <div class="label" data-i18n="label_id">ID:</div><input type="text" id="info-id" class="info-input">
-                    <div class="label" data-i18n="label_class">Class:</div><input type="text" id="info-class" class="info-input">
-                    <div class="label" data-i18n="label_name">Name:</div><input type="text" id="info-name" class="info-input">
-                    <div class="label" data-i18n="label_text">文本:</div><textarea id="info-text" class="info-input" rows="2"></textarea>
-                </div>
-                <div style="margin-top: 12px;">
-                    <div class="info-grid" style="grid-template-columns: 1fr;">
-                        <input type="text" id="element-name-input" data-i18n="placeholder_name" placeholder="输入元素名称 (例如: 登录按钮)" style="width: 100%; padding: 6px; border: 1px solid #d9d9d9; border-radius: 4px; box-sizing: border-box;">
-                        <button id="btn-save" class="btn" style="width: 100%;" disabled data-i18n="btn_save">💾 保存选中定位器</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 区域 1.5: DOM 层级树展示 -->
         <div class="pane" id="dom-hierarchy-pane" style="display: none;">
             <div class="section-title" id="dom-hierarchy-header" style="cursor: pointer; display: flex; align-items: center;">
                 <span class="arrow-icon">▼</span>
@@ -119,12 +95,7 @@
         <!-- 底部数据管理区域 -->
         <div class="pane data-management-pane">
             <div class="data-actions-grid">
-                <button id="btn-export" class="btn secondary" data-i18n="btn_export" style="display:none;">📤 导出数据</button>
-                <button id="btn-import" class="btn secondary" data-i18n="btn_import" style="display:none;">📥 导入数据</button>
-                <button id="btn-export-yingdao" class="btn secondary" style="display:none;"><img src="yingdao-icon.png" class="btn-icon"> 勾选导出至影刀</button>
-                <button id="btn-import-yingdao" class="btn secondary" style="display:none;"><img src="yingdao-icon.png" class="btn-icon"> 从影刀导入</button>
             </div>
-            <input type="file" id="file-import" accept=".json" style="display: none;">
         </div>
     </main>
 
@@ -163,14 +134,6 @@
             <div class="setting-item">
                 <div class="label" data-i18n="label_verify_color">验证高亮颜色</div>
                 <div class="value"><input type="color" id="color-verify" value="#52c41a"></div>
-            </div>
-            <!-- 影刀目录 -->
-            <div class="setting-item" style="display:none;">
-                <div class="label" data-i18n="label_yingdao_dir">影刀流程目录</div>
-                <div class="value" style="display: flex; gap: 4px; align-items: center;">
-                    <span id="yingdao-dir-display" style="font-size: 11px; color: #999; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">未设置</span>
-                    <button id="btn-select-yingdao-dir" class="btn secondary" style="padding: 2px 6px; font-size: 11px;">选择</button>
-                </div>
             </div>
             <!-- 安装桥接扩展 -->
         </div>

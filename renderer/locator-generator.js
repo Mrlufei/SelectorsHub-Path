@@ -21,6 +21,7 @@ var ATTR_SCORES = {
 // 未连接时：生成多候选 → 取评分最高的
 function generateLocatorFromAttributes() {
     var attributeList = document.getElementById('attribute-list');
+    if (!attributeList) return;
     var rows = attributeList.querySelectorAll('.attribute-row');
     var selectedAttrs = [];
 
@@ -71,11 +72,13 @@ function generateLocatorFromAttributes() {
         // ===== 扩展已连接：自动校验后选最优 =====
         var requestId = Utils.uuid();
         var timeoutId = null;
+        // 拷贝引用避免闭包竞态
+        var candidatesSnapshot = candidates;
 
         pendingValidations.set(requestId, function(results) {
             if (timeoutId) clearTimeout(timeoutId);
             if (!results || results.length === 0) {
-                adoptBestCandidate(candidates[0]);
+                adoptBestCandidate(candidatesSnapshot[0]);
                 return;
             }
 
@@ -97,7 +100,7 @@ function generateLocatorFromAttributes() {
                 adoptBestCandidate(best);
             } else {
                 // 没有精确匹配的候选，用评分最高的原始候选
-                adoptBestCandidate(candidates[0]);
+                adoptBestCandidate(candidatesSnapshot[0]);
             }
         });
 
@@ -111,7 +114,7 @@ function generateLocatorFromAttributes() {
         // 超时保护：5 秒内无响应则降级使用最佳候选
         timeoutId = setTimeout(function() {
             pendingValidations.delete(requestId);
-            adoptBestCandidate(candidates[0]);
+            adoptBestCandidate(candidatesSnapshot[0]);
         }, 5000);
         // 响应异步到达 callback，不阻塞
     } else {
@@ -286,87 +289,190 @@ function buildCombinedXpath(attrs, checkedNodes) {
     return '//' + pathParts.join('/') + '[' + conditions.join('][') + ']';
 }
 
+// ========== 公共容器 XPath 构建 ==========
+// 比较两个样本的祖先链，找到分叉点（即公共容器），生成定位到该容器的 XPath
+// 例如：冰洗(li[1]/a[1]) + 电视(li[1]/a[3]) → //.../li[1]（公共容器是 li[1]）
+//       橡皮(li[1]/a[4]) + 电脑(li[2]/a[1]) → //.../ul（公共容器是 ul）
+function buildContainerXpath(chain1, chain2) {
+    if (!chain1 || !chain2 || chain1.length === 0 || chain2.length === 0) return null;
+
+    // 找到分叉点：最后一个 tagName + index 完全相同的节点
+    // 这个节点就是公共容器
+    var forkIdx = -1;
+    var minLen = Math.min(chain1.length, chain2.length);
+    for (var i = 0; i < minLen; i++) {
+        if (chain1[i].tagName === chain2[i].tagName && chain1[i].index === chain2[i].index) {
+            forkIdx = i;
+        } else {
+            break;
+        }
+    }
+
+    // 分叉点 < 0 说明两个元素不在任何公共容器下，无法生成
+    if (forkIdx < 0) return null;
+
+    // 构建路径到分叉点（公共容器）为止，分叉点节点也包含在内且带 index
+    var parts = [];
+    for (var j = 0; j <= forkIdx; j++) {
+        var node = chain2[j];
+        if (!node) continue;
+        var tag = node.tagName || '*';
+        if (node.id) {
+            parts.push(tag + '[@id="' + node.id.replace(/"/g, '\\"') + '"]');
+        } else if (node.index !== undefined && node.index > 0) {
+            parts.push(tag + '[' + node.index + ']');
+        } else {
+            parts.push(tag);
+        }
+    }
+
+    return '//' + parts.join('/');
+}
+
+// ========== 重复结构模式检测 ==========
+// 当两个样本的祖先链在分叉后，后续所有层级的 tagName 都相同（仅 index 不同），
+// 说明这些节点属于重复结构单元，将公共容器延伸到该层级。
+// 例如：div/label[1]/span + div/label[2]/span → 分叉在 div，label 重复 → 返回 'label'
+function findRepeatingPattern(chain1, chain2, forkIdx) {
+    var len1 = chain1.length;
+    var len2 = chain2.length;
+    // 分叉后必须都有节点，且数量相同
+    if (forkIdx < 0 || len1 <= forkIdx + 1 || len2 <= forkIdx + 1) return null;
+    if (len1 - forkIdx !== len2 - forkIdx) return null;
+
+    var levels = len1 - forkIdx;
+    for (var i = 1; i < levels; i++) {
+        var n1 = chain1[forkIdx + i];
+        var n2 = chain2[forkIdx + i];
+        if (!n1 || !n2 || n1.tagName !== n2.tagName) return null;
+    }
+    // 所有层级 tagName 都相同，返回第一层（最靠近分叉点）的 tagName
+    return chain2[forkIdx + 1] ? chain2[forkIdx + 1].tagName : null;
+}
+
 // ========== 相似元素定位器生成 ==========
-// 从两个元素样本中提取共同属性，生成定位器候选
+// 比较两个样本的祖先链，找到公共容器，生成定位到容器的 XPath
 // 被 extension.js 中 element_picked 分支在相似捕获模式下调用
 function generateSimilarLocators(sample1, sample2) {
+    var chain1 = sample1.ancestorChain;
+    var chain2 = sample2.ancestorChain;
     var attrs1 = sample1.targetAttributes;
     var attrs2 = sample2.targetAttributes;
-    if (!attrs1 || !attrs2) return;
+    if (!chain1 || !chain2) return;
 
-    var commonAttrs = [];
-
-    // 1. tagName — 必须相同
-    if (attrs1.tagName && attrs2.tagName && attrs1.tagName === attrs2.tagName) {
-        commonAttrs.push({ name: 'tagName', matchType: t('match_equals'), value: attrs1.tagName });
-    }
-
-    // 2. id — 两者相同且非空
-    if (attrs1.id && attrs2.id && attrs1.id === attrs2.id) {
-        commonAttrs.push({ name: 'id', matchType: t('match_equals'), value: attrs1.id });
-    }
-
-    // 3. className — 取共同 class 的交集
-    if (attrs1.className && attrs2.className) {
-        var classes1 = attrs1.className.split(/\s+/).filter(Boolean);
-        var classes2 = attrs2.className.split(/\s+/).filter(Boolean);
-        var commonClasses = classes1.filter(function(c) { return classes2.indexOf(c) >= 0; });
-        if (commonClasses.length > 0) {
-            commonAttrs.push({ name: 'className', matchType: t('match_equals'), value: commonClasses.join(' ') });
+    // 判断是否直接兄弟（祖先链完全一致）
+    var isDirectSibling = (chain1.length === chain2.length);
+    if (isDirectSibling) {
+        for (var i = 0; i < chain1.length; i++) {
+            if (chain1[i].tagName !== chain2[i].tagName || chain1[i].index !== chain2[i].index) {
+                isDirectSibling = false;
+                break;
+            }
         }
     }
 
-    // 4. name / type / role / placeholder — 取相同值
-    var scalarAttrs = ['name', 'type', 'role', 'placeholder'];
-    scalarAttrs.forEach(function(attrName) {
-        if (attrs1[attrName] && attrs2[attrName] && attrs1[attrName] === attrs2[attrName]) {
-            commonAttrs.push({ name: attrName, matchType: t('match_equals'), value: attrs1[attrName] });
+    if (isDirectSibling && attrs1 && attrs2) {
+        // ===== 直接兄弟：提取共同属性，生成定位器候选 =====
+        // 像单个元素捕获一样使用最优解（CSS/XPath 均可）
+        var commonAttrs = [];
+
+        // 1. tagName — 必须相同
+        if (attrs1.tagName && attrs2.tagName && attrs1.tagName === attrs2.tagName) {
+            commonAttrs.push({ name: 'tagName', matchType: t('match_equals'), value: attrs1.tagName });
         }
-    });
 
-    // 5. innerText — 取较短的，用 contains 匹配（因为两个样本文本不同）
-    if (attrs1.innerText && attrs2.innerText) {
-        var shorterText = attrs1.innerText.length <= attrs2.innerText.length ? attrs1.innerText : attrs2.innerText;
-        commonAttrs.push({ name: 'innerText', matchType: t('match_contains'), value: shorterText });
-    }
+        // 2. className — 取交集
+        if (attrs1.className && attrs2.className) {
+            var classes1 = attrs1.className.split(/\s+/).filter(Boolean);
+            var classes2 = attrs2.className.split(/\s+/).filter(Boolean);
+            var commonClasses = classes1.filter(function(c) { return classes2.indexOf(c) >= 0; });
+            if (commonClasses.length > 0) {
+                commonAttrs.push({ name: 'className', matchType: t('match_equals'), value: commonClasses.join(' ') });
+            }
+        }
 
-    // 6. dataAttributes — 取键值完全相同的
-    if (attrs1.dataAttributes && attrs2.dataAttributes && attrs1.dataAttributes.length > 0 && attrs2.dataAttributes.length > 0) {
-        attrs1.dataAttributes.forEach(function(d1) {
-            var found = attrs2.dataAttributes.some(function(d2) {
-                return d1.name === d2.name && d1.value === d2.value;
-            });
-            if (found) {
-                commonAttrs.push({ name: d1.name, matchType: t('match_equals'), value: d1.value });
+        // 3. id — 两者相同且非空
+        if (attrs1.id && attrs2.id && attrs1.id === attrs2.id) {
+            commonAttrs.push({ name: 'id', matchType: t('match_equals'), value: attrs1.id });
+        }
+
+        // 4. name / type / role / placeholder — 取相同值
+        var scalarAttrs = ['name', 'type', 'role', 'placeholder'];
+        scalarAttrs.forEach(function(attrName) {
+            if (attrs1[attrName] && attrs2[attrName] && attrs1[attrName] === attrs2[attrName]) {
+                commonAttrs.push({ name: attrName, matchType: t('match_equals'), value: attrs1[attrName] });
             }
         });
+
+        // 5. dataAttributes — 取键值完全相同的
+        if (attrs1.dataAttributes && attrs2.dataAttributes) {
+            attrs1.dataAttributes.forEach(function(d1) {
+                var found = attrs2.dataAttributes.some(function(d2) {
+                    return d1.name === d2.name && d1.value === d2.value;
+                });
+                if (found) {
+                    commonAttrs.push({ name: d1.name, matchType: t('match_equals'), value: d1.value });
+                }
+            });
+        }
+
+        if (commonAttrs.length === 0) {
+            alert(t('msg_select_one_attr'));
+            return;
+        }
+
+        // 用 buildCandidateList 生成最优候选（自动选择 CSS/XPath，按评分排序）
+        var candidates = buildCandidateList(commonAttrs, []);
+        if (candidates.length === 0) return;
+
+        var newCandidates = candidates.map(function(cand, idx) {
+            return {
+                type: cand.type,
+                subtype: 'user-generated',
+                description: t('similar_generated'),
+                descriptionEn: 'Common Feature',
+                value: cand.value,
+                score: idx === 0 ? 95 : 85
+            };
+        });
+
+        currentCandidates = newCandidates;
+        renderCandidates();
+        if (currentCandidates.length > 0) {
+            validateCandidate(0);
+        }
+    } else {
+        // ===== 不同容器：用祖先链找到公共容器 =====
+        var containerXpath = buildContainerXpath(chain1, chain2);
+        if (!containerXpath) {
+            alert(t('msg_select_one_attr'));
+            return;
+        }
+
+        // 检测是否有重复结构模式，将公共容器延伸到该重复层级
+        var forkIdx = -1;
+        var minLen = Math.min(chain1.length, chain2.length);
+        for (var i = 0; i < minLen; i++) {
+            if (chain1[i].tagName === chain2[i].tagName && chain1[i].index === chain2[i].index) {
+                forkIdx = i;
+            } else { break; }
+        }
+        var repeatingTag = findRepeatingPattern(chain1, chain2, forkIdx);
+        var finalXpath = repeatingTag ? containerXpath + '/' + repeatingTag : containerXpath;
+
+        var newCandidates = [{
+            type: 'xpath',
+            subtype: 'user-generated',
+            description: t('similar_generated'),
+            descriptionEn: 'Common Feature',
+            value: finalXpath,
+            score: 95
+        }];
+
+        currentCandidates = newCandidates;
+        renderCandidates();
+        if (currentCandidates.length > 0) {
+            validateCandidate(0);
+        }
     }
-
-    if (commonAttrs.length === 0) {
-        alert(t('msg_select_one_attr'));
-        return;
-    }
-
-    // 生成候选并推入 currentCandidates
-    var checkedNodes = [];
-    var candidates = buildCandidateList(commonAttrs, checkedNodes);
-    if (candidates.length === 0) return;
-
-    // 直接取评分最高的（不等待异步校验，但立即调用 validateCandidate）
-    var best = candidates[0];
-    var newCandidates = [{
-        type: best.type,
-        subtype: 'user-generated',
-        description: t('similar_generated'),
-        descriptionEn: 'Common Feature',
-        value: best.value,
-        score: 90
-    }];
-
-    currentCandidates = newCandidates.concat(currentCandidates);
-    renderCandidates();
-    if (currentCandidates.length > 0) {
-        validateCandidate(0);
-    }
-    alert(t('msg_locator_generated'));
 }

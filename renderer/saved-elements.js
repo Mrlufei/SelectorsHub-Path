@@ -17,25 +17,6 @@ function loadPersistedData() {
   }
 }
 
-function saveElement(locator) {
-  var data = {
-    id: Utils.uuid(),
-    name: elementNameInput.value || '未命名元素',
-    url: currentElementInfo.url,
-    domain: new URL(currentElementInfo.url).hostname,
-    path: new URL(currentElementInfo.url).pathname,
-    locator: locator,
-    timestamp: Date.now(),
-    fingerprint: currentElementInfo.fingerprint,
-    ancestorChain: currentElementInfo.ancestorChain,
-    history: []
-  };
-  savedElementsCache.push(data);
-  persistData();
-  loadSavedElements();
-  alert(t('alert_saved'));
-}
-
 function saveToStorage(item) {
   var idx = savedElementsCache.findIndex(function(x) { return x.id === item.id; });
   if (idx !== -1) {
