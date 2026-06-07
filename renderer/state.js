@@ -9,7 +9,6 @@ let selectedSavedItems = new Set();
 let extensionConnected = false;
 let savedElementsCache = [];
 let pageAliasesCache = {};
-let yingdaoDirPath = '';
 
 // 父组数据
 let parentGroupsCache = {};
@@ -28,7 +27,6 @@ function saveParentGroups() {
 let pendingValidations = new Map();
 
 // 折叠状态管理
-let infoCollapse = null;
 let candidatesCollapse = null;
 let savedCollapse = null;
 

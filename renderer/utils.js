@@ -19,51 +19,6 @@ var Utils = window.Utils || {
     return true;
   },
 
-  // 指纹采集（由扩展端执行，这里保留定义供参考）
-  getFingerprint: (el) => {
-    const fp = {
-      tagName: el.tagName.toLowerCase(),
-      id: el.id || null,
-      name: el.name || null,
-      type: el.type || null,
-      role: el.getAttribute('role') || null,
-      innerText: (el.innerText || "").trim().substring(0, 50),
-      attributes: {}
-    };
-    Array.from(el.attributes).forEach(attr => {
-      if (attr.name.startsWith('data-') || attr.name.startsWith('aria-')) {
-        fp.attributes[attr.name] = attr.value;
-      }
-    });
-    const classes = Array.from(el.classList).filter(Utils.isStableClass);
-    if (classes.length > 0) fp.classList = classes;
-    return fp;
-  },
-
-  getAncestorChain: (el) => {
-    const chain = [];
-    let curr = el.parentElement;
-    let depth = 0;
-    while (curr && curr.tagName !== 'BODY' && depth < 4) {
-      const info = {
-        tagName: curr.tagName.toLowerCase(),
-        id: curr.id,
-        role: curr.getAttribute('role'),
-        index: Array.from(curr.parentElement ? curr.parentElement.children : []).filter(c => c.tagName === curr.tagName).indexOf(curr) + 1
-      };
-      Array.from(curr.attributes).forEach(attr => {
-        if (attr.name.startsWith('data-testid') || attr.name.startsWith('data-id')) {
-          if (!info.stableAttr) info.stableAttr = {};
-          info.stableAttr[attr.name] = attr.value;
-        }
-      });
-      chain.push(info);
-      curr = curr.parentElement;
-      depth++;
-    }
-    return chain;
-  },
-
   // --- Optimization: Dynamic Depth & Smart Pruning ---
   getDynamicDepth: (element) => {
     const tagName = element.tagName ? element.tagName.toLowerCase() : '';
@@ -138,52 +93,6 @@ var Utils = window.Utils || {
     return chain.reverse();
   },
 
-  // --- Feature Cache & Extraction ---
-  _featureCache: new WeakMap(),
-
-  extractFeatures: (element, useCache = true) => {
-    if (useCache && Utils._featureCache.has(element)) {
-      return Utils._featureCache.get(element);
-    }
-    const features = {
-      tagName: element.tagName.toLowerCase(),
-      className: element.className ? element.className.split(/\s+/).filter(c => c).sort() : [],
-      id: element.id || null,
-      role: element.getAttribute('role') || null,
-      type: element.getAttribute('type') || null,
-      name: element.getAttribute('name') || null,
-      placeholder: element.getAttribute('placeholder') || null,
-      depth: Utils._getElementDepth(element),
-      childCount: element.children.length,
-      hasText: !!(element.textContent && element.textContent.trim()),
-      textLength: element.textContent ? element.textContent.trim().length : 0,
-      attributes: {}
-    };
-    Array.from(element.attributes).forEach(attr => {
-      if (attr.name.startsWith('data-') || attr.name.startsWith('aria-')) {
-        features.attributes[attr.name] = attr.value;
-      }
-    });
-    if (useCache) {
-      Utils._featureCache.set(element, features);
-    }
-    return features;
-  },
-
-  _getElementDepth: (element) => {
-    let depth = 0;
-    let curr = element;
-    while (curr && curr.tagName !== 'BODY') {
-      depth++;
-      curr = curr.parentElement;
-    }
-    return depth;
-  },
-
-  clearFeatureCache: () => {
-    Utils._featureCache = new WeakMap();
-  },
-
   // 修复候选生成
   generateRepairCandidates: (fingerprint, ancestorChain) => {
     const candidates = [];
@@ -256,54 +165,6 @@ var Utils = window.Utils || {
       }
     }
     return { pass: true };
-  },
-
-  // --- Structural Similarity ---
-  calculateSimilarity: (features1, features2) => {
-    let score = 0;
-    let maxScore = 0;
-    maxScore += 30;
-    if (features1.tagName === features2.tagName) score += 30;
-    maxScore += 25;
-    if (features1.className.length > 0 && features2.className.length > 0) {
-      const commonClasses = features1.className.filter(c => features2.className.includes(c));
-      score += 25 * (commonClasses.length / Math.max(features1.className.length, features2.className.length));
-    } else if (features1.className.length === 0 && features2.className.length === 0) {
-      score += 25;
-    }
-    maxScore += 20;
-    if (features1.role && features2.role && features1.role === features2.role) score += 10;
-    if (features1.type && features2.type && features1.type === features2.type) score += 10;
-    maxScore += 15;
-    if (Math.abs(features1.depth - features2.depth) <= 2) score += 8;
-    if (Math.abs(features1.childCount - features2.childCount) <= 1) score += 7;
-    maxScore += 10;
-    if (features1.hasText === features2.hasText) score += 5;
-    if (features1.textLength > 0 && features2.textLength > 0) {
-      const lengthSimilarity = 1 - Math.abs(features1.textLength - features2.textLength) / Math.max(features1.textLength, features2.textLength);
-      score += 5 * lengthSimilarity;
-    }
-    return maxScore > 0 ? score / maxScore : 0;
-  },
-
-  findSimilarElements: (element, threshold = 0.7, batchSize = 100) => {
-    if (!element || !element.parentElement) return [];
-    const targetFeatures = Utils.extractFeatures(element);
-    const similar = [];
-    const siblings = Array.from(element.parentElement.children);
-    const limit = Math.min(siblings.length, batchSize);
-    for (let i = 0; i < limit; i++) {
-      const sibling = siblings[i];
-      if (sibling === element) continue;
-      const rect = sibling.getBoundingClientRect();
-      if (rect.width === 0 && rect.height === 0) continue;
-      const siblingFeatures = Utils.extractFeatures(sibling);
-      const similarity = Utils.calculateSimilarity(targetFeatures, siblingFeatures);
-      if (similarity >= threshold) {
-        similar.push({ element: sibling, similarity: similarity, features: siblingFeatures });
-      }
-    }
-    return similar.sort((a, b) => b.similarity - a.similarity);
   },
 
   similarity: (s1, s2) => {

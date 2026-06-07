@@ -8,12 +8,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onExtensionStatus: (callback) => ipcRenderer.on('extension-status', (_, connected) => callback(connected)),
 
   // 安装扩展
-  openExtensionDir: () => ipcRenderer.invoke('open-extension-dir'),
-
-  // 影刀文件操作
-  selectYingdaoDir: () => ipcRenderer.invoke('select-yingdao-dir'),
-  scanYingdaoDir: (dirPath) => ipcRenderer.invoke('scan-yingdao-dir', dirPath),
-  importYingdao: (dirPath) => ipcRenderer.invoke('import-yingdao', dirPath),
-  exportYingdao: (data) => ipcRenderer.invoke('export-yingdao', data),
-  writeYingdaoXml: (data) => ipcRenderer.invoke('write-yingdao-xml', data)
+  openExtensionDir: () => ipcRenderer.invoke('open-extension-dir')
 });

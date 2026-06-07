@@ -1,4 +1,4 @@
-// settings.js - 设置模块（主题、语言、颜色、影刀目录）
+// settings.js - 设置模块（主题、语言、颜色）
 // 依赖: state.js
 
 // ========== 设置模块 ==========
@@ -52,18 +52,6 @@ function initSettings() {
     sendToExtension({ action: 'update_colors', colors: { pick: colorPick.value, verify: colorVerify.value } });
   });
 
-  var btnSelectYingdaoDir = document.getElementById('btn-select-yingdao-dir');
-  var yingdaoDirDisplay = document.getElementById('yingdao-dir-display');
-  btnSelectYingdaoDir.addEventListener('click', async function() {
-    var dir = await window.electronAPI.selectYingdaoDir();
-    if (dir) {
-      yingdaoDirPath = dir;
-      yingdaoDirDisplay.textContent = dir.split(/[/\\]/).pop();
-      yingdaoDirDisplay.title = dir;
-      saveSettings();
-    }
-  });
-
   var btnInstallExtension = document.getElementById('btn-install-extension');
   if (btnInstallExtension) {
     btnInstallExtension.addEventListener('click', async function() {
@@ -94,13 +82,6 @@ function loadSettings() {
     var colorVerify = document.getElementById('color-verify');
     colorPick.value = settings.pickColor || '#ff0000';
     colorVerify.value = settings.verifyColor || '#52c41a';
-
-    yingdaoDirPath = settings.yingdaoDir || '';
-    var yingdaoDirDisplay = document.getElementById('yingdao-dir-display');
-    if (yingdaoDirPath) {
-      yingdaoDirDisplay.textContent = yingdaoDirPath.split(/[/\\]/).pop();
-      yingdaoDirDisplay.title = yingdaoDirPath;
-    }
   } catch (e) { /* 忽略 */ }
   loadPersistedData();
 }
@@ -112,7 +93,6 @@ function saveSettings() {
     lang: currentLang,
     theme: document.documentElement.getAttribute('data-theme') || 'default',
     pickColor: colorPick ? colorPick.value : '#ff0000',
-    verifyColor: colorVerify ? colorVerify.value : '#52c41a',
-    yingdaoDir: yingdaoDirPath
+    verifyColor: colorVerify ? colorVerify.value : '#52c41a'
   }));
 }

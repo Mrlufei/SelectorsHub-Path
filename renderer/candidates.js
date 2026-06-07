@@ -74,8 +74,6 @@ function renderCandidates() {
       document.querySelectorAll('.locator-item').forEach(function(el) { el.style.border = '1px solid var(--border-color)'; });
       item.style.border = '2px solid var(--primary-color)';
       selectedLocatorIndex = index;
-      btnSave.disabled = false;
-      btnSave.textContent = t('btn_save_with_type', { type: cand.type });
       sendToExtension({ action: 'clear_highlight' });
     });
 
@@ -85,6 +83,7 @@ function renderCandidates() {
 
 // ========== 验证逻辑 ==========
 function validateCandidate(index) {
+  if (index < 0 || index >= currentCandidates.length) return;
   var locator = currentCandidates[index];
   var itemEl = candidatesList.children[index];
   if (!itemEl) return;

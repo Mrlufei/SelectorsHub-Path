@@ -18,7 +18,6 @@ const I18N = {
     'label_theme': '主题配色',
     'label_pick_color': '捕获高亮颜色',
     'label_verify_color': '验证高亮颜色',
-    'label_yingdao_dir': '影刀流程目录',
     'label_install_extension': '安装浏览器插件',
     'btn_install_extension': '📂 打开插件目录',
     'install_extension_tip': '请在 Chrome 中打开 chrome://extensions，开启"开发者模式"，然后点击"加载已解压的扩展程序"，选择刚才打开的文件夹。',
@@ -51,20 +50,12 @@ const I18N = {
     'alert_repaired': '修复成功！已更新为主定位器。',
     'confirm_force_adopt': '该候选存在风险 ({reason})，确定要强制采纳吗？',
     'btn_export': '📤 导出数据', 'btn_import': '📥 导入数据',
-    'btn_export_yingdao': '勾选导出至影刀', 'btn_import_yingdao': '从影刀导入',
     'msg_no_data_to_export': '暂无数据可导出',
     'confirm_import': '准备导入 {n} 条数据。现有相同ID的数据将被更新，新的将被添加。确定继续吗？',
     'alert_imported': '导入完成！新增 {added} 条，更新 {updated} 条。',
     'alert_import_failed': '导入失败：文件格式错误或损坏。',
     'extension_connected': '✅ 扩展已连接',
     'extension_disconnected': '❌ 扩展未连接',
-    'yingdao_dir_not_set': '请先在设置中选择影刀流程目录',
-    'yingdao_import_success': '从影刀导入成功！共导入 {n} 个 Web 元素。',
-    'yingdao_import_empty': '未找到可导入的 Web 元素。',
-    'yingdao_export_success': '导出至影刀成功！共写入 {n} 个分组。',
-    'yingdao_export_empty': '暂无数据可导出至影刀。',
-    'yingdao_export_no_selection': '请先勾选要导出的元素。',
-    'yingdao_skipped_desktop': '已跳过 {n} 个桌面端选择器（仅支持 Web 元素）。',
     'msg_locator_modified': '定位器已修改',
     'label_editable': '可编辑',
     'section_dom_hierarchy': '元素节点 (网页结构)',
@@ -111,7 +102,6 @@ const I18N = {
     'label_theme': 'Theme Color',
     'label_pick_color': 'Capture Highlight Color',
     'label_verify_color': 'Verify Highlight Color',
-    'label_yingdao_dir': 'YingDao Process Dir',
     'label_install_extension': 'Install Browser Extension',
     'btn_install_extension': '📂 Open Extension Folder',
     'install_extension_tip': 'Open chrome://extensions in Chrome, enable "Developer mode", click "Load unpacked", then select the folder that just opened.',
@@ -140,20 +130,12 @@ const I18N = {
     'alert_repaired': 'Repaired! Updated as primary locator.',
     'confirm_force_adopt': 'This candidate has risks ({reason}). Force adopt?',
     'btn_export': '📤 Export Data', 'btn_import': '📥 Import Data',
-    'btn_export_yingdao': 'Export Selected to YingDao', 'btn_import_yingdao': 'Import from YingDao',
     'msg_no_data_to_export': 'No data to export',
     'confirm_import': 'Ready to import {n} items. Continue?',
     'alert_imported': 'Import completed! Added {added}, Updated {updated}.',
     'alert_import_failed': 'Import failed: Invalid file format.',
     'extension_connected': '✅ Extension Connected',
     'extension_disconnected': '❌ Extension Disconnected',
-    'yingdao_dir_not_set': 'Please set YingDao process directory in Settings first',
-    'yingdao_import_success': 'Imported {n} web elements from YingDao.',
-    'yingdao_import_empty': 'No importable web elements found.',
-    'yingdao_export_success': 'Exported {n} groups to YingDao.',
-    'yingdao_export_empty': 'No data to export to YingDao.',
-    'yingdao_export_no_selection': 'Please select elements to export first.',
-    'yingdao_skipped_desktop': 'Skipped {n} desktop selectors (Web only).',
     'msg_locator_modified': 'Locator modified',
     'label_editable': 'Editable',
     'section_dom_hierarchy': 'Element Nodes (Page Structure)',
@@ -203,10 +185,4 @@ function updatePageLanguage() {
       el.textContent = t(key);
     }
   });
-  // 带图标的影刀按钮（不用 data-i18n，手动更新 innerHTML）
-  const iconHtml = '<img src="yingdao-icon.png" class="btn-icon">';
-  const btnExYd = document.getElementById('btn-export-yingdao');
-  const btnImYd = document.getElementById('btn-import-yingdao');
-  if (btnExYd) btnExYd.innerHTML = iconHtml + ' ' + t('btn_export_yingdao');
-  if (btnImYd) btnImYd.innerHTML = iconHtml + ' ' + t('btn_import_yingdao');
 }
